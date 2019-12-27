@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Construct a sample chart, accepting runtime environment loaded dependencies and data. This object is not aware of
  * where it runs: browser or node/V8
@@ -74,7 +75,7 @@ function chart(d3, techan, csvData) {
         .attr("dy", ".71em")
         .style("text-anchor", "end")
         .text("Price ($)");
-  }
+  };
 }
 
 // If we're in node
