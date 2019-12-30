@@ -1,35 +1,7 @@
 
-var margin = { top: 20, right: 20, bottom: 60, left: 50 },
+var margin = { top: 20, right: 20, bottom: 30, left: 50 },
   width = 960 - margin.left - margin.right,
   height = 500 - margin.top - margin.bottom;
-
-function getRandom(min, max) {
-  return Math.round((Math.random() * (max - min) + min) * 100) / 100;
-}
-
-function getRandomInt(min, max) {
-  return Math.round(Math.random() * (max - min) + min + 1);
-}
-
-function randomOHLC(last, increment) { // increment 24H (86400 * 1000)
-  var next = {};
-
-  next.date = new Date(last.date.getTime() + increment);
-  next.open = last.close;
-
-  var min = last.close - (last.close * 0.02);
-  var max = last.close + (last.close * 0.02);
-  min = (min < 0 ? 0.0001 : min);
-  var v1 = getRandom(min, max);
-  var v2 = getRandom(min, max);
-  next.high = (v1 > v2) ? v1 : v2;
-  next.high = (next.high > next.open) ? next.high : next.open;
-  next.low = (v1 < v2) ? v1 : v2;
-  next.low = (next.low < next.open) ? next.low : next.open;
-  next.close = getRandom(next.low, next.high);
-  next.volume = getRandomInt(last.volume - (last.volume * 0.25), last.volume + (last.volume * 0.25));
-  return next;
-}
 
 var x = techan.scale.financetime()
   .range([0, width]);
@@ -64,7 +36,6 @@ var volume = techan.plot.volume()
   .yScale(yVolume);
 
 var xAxis = d3.axisBottom(x);
-xAxis.tickFormat(d3.timeFormat('%e %b %H:%M'));
 
 var yAxis = d3.axisLeft(y);
 
@@ -75,7 +46,7 @@ var volumeAxis = d3.axisRight(yVolume)
 var timeAnnotation = techan.plot.axisannotation()
   .axis(xAxis)
   .orient('bottom')
-  .format(d3.timeFormat('%Y-%m-%d %X'))
+  .format(d3.timeFormat('%Y-%m-%d'))
   .width(65)
   .translate([0, height]);
 
@@ -158,27 +129,7 @@ var coordsText = svg.append('text')
   .attr("x", width - 5)
   .attr("y", 15);
 
-var feed = [];
-var seed = {
-  date: new Date(Date.now()),
-  open: 65.5,
-  high: 67.2,
-  low: 64.8,
-  close: 55.1,
-  volume: 250000
-};
-
-feed.push(seed);
-
-/**
- * Add 24 hours of 5 minutes interval
- */
-for (var i = 0; i < 288; i++) {
-  seed = randomOHLC(seed, 5 * 60 * 1000);
-  feed.push(seed);
-}
-
-redraw(feed);
+let feed;
 
 function redraw(data) {
   var accessor = ohlc.accessor();
@@ -207,21 +158,6 @@ function redraw(data) {
 
       svg.select("g.crosshair.ohlc").call(crosshair);
     });
-
-  // Set next timer expiry
-  setTimeout(function () {
-    var newData;
-    var next = randomOHLC(data[data.length - 1], 5 * 60 * 1000);
-    // Simulate intra day updates when no feed is left
-    //var last = data[data.length - 1];
-    // Last must be between high and low
-    //last.close = Math.round(((last.high - last.low) * Math.random()) * 10) / 10 + last.low;
-    data.shift();
-    data.push(next);
-    newData = data;
-
-    redraw(newData);
-  }, (Math.random() * 1000) + 400); // Randomly pick an interval to update the chart
 }
 
 function move(coords) {
@@ -229,3 +165,22 @@ function move(coords) {
     timeAnnotation.format()(coords.x) + ", " + ohlcAnnotation.format()(coords.y)
   );
 }
+
+/**
+ * Program flow breakdown
+ * fetch historical data
+ * draw chart
+ * main loop start
+ * remove (switch) first element out
+ * set X label to date/month ( 1 Jan ) format on new first element.
+ * fetch latest price
+ * add (push) element with current time, and previous close as new open, high, low and close.
+ * while current time is less than previous time + interval (5 min)
+ * - fetch latest price
+ * - update last element with latest data
+ * end while
+ * main loop end, repeat
+ */
+
+feed = [];
+redraw(feed);
