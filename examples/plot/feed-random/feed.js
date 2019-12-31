@@ -5,6 +5,33 @@ var margin = { top: 20, right: 20, bottom: 30, left: 50 },
 
 var parseDate = d3.timeParse("%d-%b-%y");
 
+function getRandom(min, max) {
+  return Math.round((Math.random() * (max - min) + min) * 100) / 100;
+}
+
+function getRandomInt(min, max) {
+  return Math.round(Math.random() * (max - min) + min +1);
+}
+
+function randomOHLC(last) {
+  var next = {};
+
+  next.date = new Date(last.date.getTime() + (86400 * 1000));
+  next.open = last.close;
+
+  var min = last.close - (last.close * 0.02);
+  var max = last.close + (last.close * 0.02);
+  var v1 = getRandom(min, max);
+  var v2 = getRandom(min, max);
+  next.high = (v1 > v2) ? v1 : v2;
+  next.high = (next.high > next.open) ? next.high : next.open;
+  next.low = (v1 < v2) ? v1 : v2;
+  next.low = (next.low < next.open) ? next.low : next.open;
+  next.close = getRandom(next.low, next.high);
+  next.volume = getRandomInt(last.volume - (last.volume * 0.25), last.volume + (last.volume * 0.25));
+  return next;
+}
+
 var x = techan.scale.financetime()
   .range([0, width]);
 
