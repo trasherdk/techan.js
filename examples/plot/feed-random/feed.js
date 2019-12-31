@@ -10,7 +10,7 @@ function getRandom(min, max) {
 }
 
 function getRandomInt(min, max) {
-  return Math.round(Math.random() * (max - min) + min +1);
+  return Math.round(Math.random() * (max - min) + min + 1);
 }
 
 function randomOHLC(last) {
@@ -21,6 +21,7 @@ function randomOHLC(last) {
 
   var min = last.close - (last.close * 0.02);
   var max = last.close + (last.close * 0.02);
+  min = (min < 0 ? 0.0001 : min);
   var v1 = getRandom(min, max);
   var v2 = getRandom(min, max);
   next.high = (v1 > v2) ? v1 : v2;
@@ -215,11 +216,13 @@ function redraw(data) {
       newData = feed.slice(0, data.length + 1);
     }
     else {
+      var next = randomOHLC(data[data.length - 1]);
       // Simulate intra day updates when no feed is left
-      var last = data[data.length - 1];
+      //var last = data[data.length - 1];
       // Last must be between high and low
-      last.close = Math.round(((last.high - last.low) * Math.random()) * 10) / 10 + last.low;
-
+      //last.close = Math.round(((last.high - last.low) * Math.random()) * 10) / 10 + last.low;
+      data.shift();
+      data.push(next);
       newData = data;
     }
 
