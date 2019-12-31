@@ -2,8 +2,9 @@ body {
   font: 10px sans-serif;
 }
 
-chart {
+.chart {
   border: 1px solid olive;
+  display: inline-block;
 }
 
 text {

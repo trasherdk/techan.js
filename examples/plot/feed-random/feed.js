@@ -69,7 +69,7 @@ var crosshair = techan.plot.crosshair()
   .yAnnotation([ohlcAnnotation, volumeAnnotation])
   .on("move", move);
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select(".chart").append("svg")
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom);
 
