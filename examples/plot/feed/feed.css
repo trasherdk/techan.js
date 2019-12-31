@@ -1,0 +1,54 @@
+body {
+  font: 10px sans-serif;
+}
+
+chart {
+  border: 1px solid olive;
+}
+
+text {
+  fill: #000;
+}
+
+path {
+  fill: none;
+  stroke-width: 1;
+}
+
+path.ohlc {
+  stroke: #000000;
+  stroke-width: 1;
+}
+
+path.ohlc.up {
+  stroke: #00aa00;
+}
+
+path.ohlc.down {
+  stroke: #ff0000;
+}
+
+.ma-0 path.line {
+  stroke: #1f77b4;
+}
+
+.ma-1 path.line {
+  stroke: #aec7e8;
+}
+
+path.volume {
+  fill: #eeeeee;
+}
+
+.crosshair {
+  cursor: crosshair;
+}
+
+.crosshair path.wire {
+  stroke: #dddddd;
+  stroke-dasharray: 1, 1;
+}
+
+.crosshair .axisannotation path {
+  fill: #dddddd;
+}
