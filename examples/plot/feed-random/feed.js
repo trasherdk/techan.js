@@ -3,8 +3,6 @@ var margin = { top: 20, right: 20, bottom: 30, left: 50 },
   width = 960 - margin.left - margin.right,
   height = 500 - margin.top - margin.bottom;
 
-var parseDate = d3.timeParse("%d-%b-%y");
-
 function getRandom(min, max) {
   return Math.round((Math.random() * (max - min) + min) * 100) / 100;
 }
