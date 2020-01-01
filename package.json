@@ -26,38 +26,18 @@
   },
   "license" : "MIT",
   "dependencies": {
-    "d3": "~4.2.6"
+    "d3": "^5.15.0"
   },
   "devDependencies": {
-    "bower": "~1.7.9",
-    "grunt": "~1.0.1",
-    "grunt-banner": "~0.6.0",
-    "grunt-browserify": "~5.0.0",
-    "grunt-bump": "0.8.0",
-    "grunt-cli": "~1.2.0",
-    "grunt-contrib-clean": "~1.0.0",
-    "grunt-contrib-compress": "~1.3.0",
-    "grunt-contrib-connect": "~1.0.2",
-    "grunt-contrib-copy": "~1.0.0",
-    "grunt-contrib-jshint": "~1.0.0",
-    "grunt-contrib-uglify": "~2.0.0",
-    "grunt-contrib-watch": "~1.0.0",
-    "grunt-jscs": "~3.0.1",
-    "grunt-jsonlint": "~1.1.0",
-    "grunt-karma": "~2.0.0",
-    "grunt-newer": "~1.2.0",
-    "grunt-replace": "~1.0.1",
-    "grunt-watchify": "~0.1.0",
     "jasmine-core": "~2.4.1",
-    "karma": "^1.2.0",
+    "karma": "^4.4.1",
     "karma-jasmine": "~1.0.2",
     "karma-phantomjs-launcher": "~1.0.1",
-    "load-grunt-tasks": "~3.5.2",
     "phantomjs": "^2.1.7"
   },
   "scripts": {
-    "watch": "grunt serve",
-    "start": "grunt serve",
-    "test": "grunt"
+    "watch": "",
+    "start": "",
+    "test": ""
   }
 }
