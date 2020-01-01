@@ -159,25 +159,25 @@ var coordsText = svg.append('text')
   .attr("x", width - 5)
   .attr("y", 15);
 
-var feed;
+var feed = [];
+var seed = {
+  date: new Date(),
+  open: 65.5,
+  high: 67.2,
+  low: 64.8,
+  close: 55.1,
+  volume: 250000
+};
 
-d3.csv("data.csv", function (error, csv) {
-  var accessor = ohlc.accessor();
+seed.date.setDate(seed.date.getDate() - 150);
+feed.push(seed);
 
-  feed = csv.map(function (d) {
-    return {
-      date: parseDate(d.Date),
-      open: +d.Open,
-      high: +d.High,
-      low: +d.Low,
-      close: +d.Close,
-      volume: +d.Volume
-    };
-  }).sort(function (a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
+for (var i=0; i < 150; i++) {
+  var seed = randomOHLC(seed);
+  feed.push(seed);
+}
 
-  // Start off an initial set of data
-  redraw(feed.slice(0, 163));
-});
+redraw(feed);
 
 function redraw(data) {
   var accessor = ohlc.accessor();
