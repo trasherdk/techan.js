@@ -53,3 +53,8 @@ path.volume {
 .crosshair .axisannotation path {
   fill: #dddddd;
 }
+
+.x .tick text {
+  text-anchor: end;
+  transform: rotate(-50deg);
+}
