@@ -1,5 +1,5 @@
 
-var margin = { top: 20, right: 20, bottom: 30, left: 50 },
+var margin = { top: 20, right: 20, bottom: 60, left: 50 },
   width = 960 - margin.left - margin.right,
   height = 500 - margin.top - margin.bottom;
 
@@ -11,10 +11,10 @@ function getRandomInt(min, max) {
   return Math.round(Math.random() * (max - min) + min + 1);
 }
 
-function randomOHLC(last) {
+function randomOHLC(last, increment) {
   var next = {};
 
-  next.date = new Date(last.date.getTime() + (86400 * 1000));
+  next.date = new Date(last.date.getTime() + increment);
   next.open = last.close;
 
   var min = last.close - (last.close * 0.02);
@@ -64,6 +64,7 @@ var volume = techan.plot.volume()
   .yScale(yVolume);
 
 var xAxis = d3.axisBottom(x);
+xAxis.tickFormat(d3.timeFormat('%e %b %H:%M'));
 
 var yAxis = d3.axisLeft(y);
 
@@ -74,7 +75,7 @@ var volumeAxis = d3.axisRight(yVolume)
 var timeAnnotation = techan.plot.axisannotation()
   .axis(xAxis)
   .orient('bottom')
-  .format(d3.timeFormat('%Y-%m-%d'))
+  .format(d3.timeFormat('%Y-%m-%d %X'))
   .width(65)
   .translate([0, height]);
 
@@ -159,7 +160,7 @@ var coordsText = svg.append('text')
 
 var feed = [];
 var seed = {
-  date: new Date(),
+  date: new Date(Date.now()),
   open: 65.5,
   high: 67.2,
   low: 64.8,
@@ -167,11 +168,13 @@ var seed = {
   volume: 250000
 };
 
-seed.date.setDate(seed.date.getDate() - 150);
 feed.push(seed);
 
-for (var i=0; i < 150; i++) {
-  var seed = randomOHLC(seed);
+/**
+ * Add 24 hours of 5 minutes interval
+ */
+for (var i = 0; i < 288; i++) {
+  seed = randomOHLC(seed, 5 * 60 * 1000);
   feed.push(seed);
 }
 
@@ -208,21 +211,14 @@ function redraw(data) {
   // Set next timer expiry
   setTimeout(function () {
     var newData;
-
-    if (data.length < feed.length) {
-      // Simulate a daily feed
-      newData = feed.slice(0, data.length + 1);
-    }
-    else {
-      var next = randomOHLC(data[data.length - 1]);
-      // Simulate intra day updates when no feed is left
-      //var last = data[data.length - 1];
-      // Last must be between high and low
-      //last.close = Math.round(((last.high - last.low) * Math.random()) * 10) / 10 + last.low;
-      data.shift();
-      data.push(next);
-      newData = data;
-    }
+    var next = randomOHLC(data[data.length - 1], 5 * 60 * 1000);
+    // Simulate intra day updates when no feed is left
+    //var last = data[data.length - 1];
+    // Last must be between high and low
+    //last.close = Math.round(((last.high - last.low) * Math.random()) * 10) / 10 + last.low;
+    data.shift();
+    data.push(next);
+    newData = data;
 
     redraw(newData);
   }, (Math.random() * 1000) + 400); // Randomly pick an interval to update the chart
