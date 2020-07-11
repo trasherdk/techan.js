@@ -1,0 +1,39 @@
+body {
+  font: 10px sans-serif;
+}
+
+text {
+  fill: #000;
+}
+
+button {
+  position: absolute;
+  right: 20px;
+  top: 440px;
+  display: none;
+}
+
+.ohlc path.up {
+  stroke: #00AA00;
+}
+
+.ohlc path.down {
+  stroke: #FF0000;
+}
+
+.bollinger path {
+  fill: none;
+  stroke-width: 1;
+}
+
+.bollinger path.upper {
+  stroke: #0000AA;
+}
+
+.bollinger path.lower {
+  stroke: #FF9999;
+}
+
+.bollinger path.middle {
+  stroke: #BBBBBB;
+}

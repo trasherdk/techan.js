@@ -1,0 +1,35 @@
+body {
+  font: 10px sans-serif;
+}
+
+text {
+  fill: #000;
+}
+
+button {
+  position: absolute;
+  right: 20px;
+  top: 440px;
+  display: none;
+}
+
+.adx path {
+  fill: none;
+  stroke-width: 1;
+}
+
+.adx {
+  stroke: #000000;
+}
+
+.adx path.adx {
+  stroke: #000000;
+}
+
+.adx path.plusDi {
+  stroke: #00ff00;
+}
+
+.adx path.minusDi {
+  stroke: #ff0000;
+}

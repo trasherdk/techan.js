@@ -1,0 +1,52 @@
+body {
+  font: 10px sans-serif;
+}
+
+text {
+  fill: #000;
+}
+
+button {
+  position: absolute;
+  right: 20px;
+  top: 440px;
+  display: none;
+}
+
+.aroon path {
+  fill: none;
+  stroke-width: 1;
+}
+.aroon {
+  stroke: #000000;
+}
+
+.aroon.up {
+  stroke: #00AA00;
+  stroke-width: 1.5;
+}
+
+.aroon.down {
+  stroke: #FF0000;
+  stroke-width: 1.5;
+}
+
+.aroon.oscillator {
+  stroke: #0000FF;
+  stroke-width: 0.5;
+}
+.aroon.oscillatorArea{
+  fill: #0000FF;
+  opacity:0.025;
+}
+
+.aroon path.overbought, .aroon path.oversold {
+  stroke: #FF9999;
+  stroke-width: 1;
+  stroke-dasharray: 2, 2;
+}
+
+.aroon path.middle, path.zero {
+  stroke: #BBBBBB;
+  stroke-dasharray: 5, 5;
+}

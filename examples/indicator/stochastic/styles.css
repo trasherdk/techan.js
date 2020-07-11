@@ -1,0 +1,32 @@
+body {
+  font: 10px sans-serif;
+}
+
+text {
+  fill: #000;
+}
+
+button {
+  position: absolute;
+  right: 20px;
+  top: 440px;
+  display: none;
+}
+
+.stochastic path {
+  fill: none;
+  stroke-width: 1;
+}
+
+.stochastic.up {
+  stroke: #00AA00;
+}
+
+.stochastic.down {
+  stroke: #FF0000;
+}
+
+.stochastic path.overbought, .stochastic path.oversold {
+  stroke: #FF9999;
+  stroke-dasharray: 5, 5;
+}

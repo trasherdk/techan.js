@@ -129,8 +129,6 @@ var coordsText = svg.append('text')
   .attr("x", width - 5)
   .attr("y", 15);
 
-let feed;
-
 function redraw(data) {
   var accessor = ohlc.accessor();
 
@@ -182,5 +180,38 @@ function move(coords) {
  * main loop end, repeat
  */
 
-feed = [];
-redraw(feed);
+//feed = [];
+
+async function getHistory() {
+  const URL = "https://min-api.cryptocompare.com/data/histominute?fsym=XMR&tsym=EUR&limit=240";
+
+  return await d3.json(URL, function(error, data) {
+    var accessor = ohlc.accessor();
+
+    data = data.Data.map(function (d) {
+      return {
+        date: new Date(d.time * 1000),
+        open: +d.open,
+        high: +d.high,
+        low: +d.low,
+        close: +d.close,
+        volume: +d.volumeto
+      };
+    })
+    .sort(function (a, b) {
+      return d3.ascending(accessor.d(a), accessor.d(b));
+    });
+
+    redraw(data);
+  });
+}
+
+let feed = [];
+
+async function main() {
+  feed = await getHistory();
+//  redraw(feed);
+  console.log(feed);
+}
+
+main();

@@ -1,0 +1,24 @@
+body {
+  font: 10px sans-serif;
+}
+
+text {
+  fill: #000;
+}
+
+button {
+  position: absolute;
+  right: 20px;
+  top: 440px;
+  display: none;
+}
+
+.williams path {
+  fill: none;
+  stroke-width: 1;
+}
+
+.williams.up {
+  stroke: #006600;
+  stroke-width: 1.5;
+}

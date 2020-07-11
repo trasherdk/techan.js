@@ -1,118 +1,98 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style>
+<html lang="en">
 
-    body {
-        font: 10px sans-serif;
-    }
+  <head>
+    <meta charset="utf-8">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="/lib/techan.min.js"></script>
 
-    text {
-        fill: #000;
-    }
+    <link href="styles.css" rel="stylesheet">
 
-    button {
-        position: absolute;
-        right: 20px;
-        top: 440px;
-        display: none;
-    }
+  </head>
 
-    path.candle {
-        stroke: #000000;
-    }
+  <body>
+    <button>Update</button>
+    <script>
 
-    path.candle.body {
-        stroke-width: 0;
-    }
+      var margin = { top: 20, right: 20, bottom: 30, left: 50 },
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
 
-    path.candle.up {
-        fill: #00AA00;
-        stroke: #00AA00;
-    }
+      var parseDate = d3.timeParse("%d-%b-%y");
 
-    path.candle.down {
-        fill: #FF0000;
-        stroke: #FF0000;
-    }
+      var x = techan.scale.financetime()
+        .range([0, width]);
 
-</style>
-<body>
-<button>Update</button>
-<script src="http://d3js.org/d3.v4.min.js"></script>
-<script src="http://techanjs.org/techan.min.js"></script>
-<script>
+      var y = d3.scaleLinear()
+        .range([height, 0]);
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 50},
-            width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+      var candlestick = techan.plot.candlestick()
+        .xScale(x)
+        .yScale(y);
 
-    var parseDate = d3.timeParse("%d-%b-%y");
+      var xAxis = d3.axisBottom()
+        .scale(x);
 
-    var x = techan.scale.financetime()
-            .range([0, width]);
+      var yAxis = d3.axisLeft()
+        .scale(y);
 
-    var y = d3.scaleLinear()
-            .range([height, 0]);
+      var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var candlestick = techan.plot.candlestick()
-            .xScale(x)
-            .yScale(y);
+      URL="https://min-api.cryptocompare.com/data/histominute?tsym=EUR&fsym=XMR&limit=240";
 
-    var xAxis = d3.axisBottom()
-            .scale(x);
-
-    var yAxis = d3.axisLeft()
-            .scale(y);
-
-    var svg = d3.select("body").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    d3.csv("data.csv", function(error, data) {
+      d3.json(URL, function (error, data) {
         var accessor = candlestick.accessor();
 
-        data = data.slice(0, 200).map(function(d) {
-            return {
-                date: parseDate(d.Date),
-                open: +d.Open,
-                high: +d.High,
-                low: +d.Low,
-                close: +d.Close,
-                volume: +d.Volume
-            };
-        }).sort(function(a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
+        data = data.Data.map(function (d) {
+          return {
+            date: new Date(d.time * 1000),
+            open: +d.open,
+            high: +d.high,
+            low: +d.low,
+            close: +d.close,
+            volume: +d.volumeto
+          };
+        })
+        .sort(function (a, b)
+        {
+          return d3.ascending(accessor.d(a), accessor.d(b)); 
+        });
 
         svg.append("g")
-                .attr("class", "candlestick");
+          .attr("class", "candlestick");
 
         svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + height + ")");
+          .attr("class", "x axis")
+          .attr("transform", "translate(0," + height + ")");
 
         svg.append("g")
-                .attr("class", "y axis")
-                .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 6)
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
-                .text("Price ($)");
+          .attr("class", "y axis")
+          .append("text")
+          .attr("transform", "rotate(-90)")
+          .attr("y", 6)
+          .attr("dy", ".71em")
+          .style("text-anchor", "end")
+          .text("Price ($)");
 
         // Data to display initially
-        draw(data.slice(0, data.length-20));
+        draw(data);
         // Only want this button to be active if the data has loaded
-        d3.select("button").on("click", function() { draw(data); }).style("display", "inline");
-    });
+        d3.select("button").on("click", function () { draw(data); }).style("display", "inline");
+      });
 
-    function draw(data) {
+      function draw(data) {
         x.domain(data.map(candlestick.accessor().d));
         y.domain(techan.scale.plot.ohlc(data, candlestick.accessor()).domain());
 
         svg.selectAll("g.candlestick").datum(data).call(candlestick);
         svg.selectAll("g.x.axis").call(xAxis);
         svg.selectAll("g.y.axis").call(yAxis);
-    }
+      }
 
-</script>
+    </script>
+  </body>
+</html>

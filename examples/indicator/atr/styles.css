@@ -1,0 +1,20 @@
+body {
+  font: 10px sans-serif;
+}
+
+text {
+  fill: #000;
+}
+
+button {
+  position: absolute;
+  right: 20px;
+  top: 440px;
+  display: none;
+}
+
+.atr path {
+  fill: none;
+  stroke-width: 1;
+  stroke: #000000;
+}

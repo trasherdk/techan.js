@@ -1,0 +1,26 @@
+body {
+  font: 10px sans-serif;
+}
+
+text {
+  fill: #000;
+}
+
+button {
+  position: absolute;
+  right: 20px;
+  top: 440px;
+  display: none;
+}
+
+.sroc path {
+  fill: none;
+  stroke-width: 1;
+  stroke: #0000AA;
+}
+
+.sroc path.zero {
+stroke: #BBBBBB;
+stroke-dasharray: 0;
+stroke-opacity: 0.5;
+}

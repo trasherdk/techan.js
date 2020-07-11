@@ -1,33 +1,15 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style>
+<html lang="en">
 
-    body {
-        font: 10px sans-serif;
-    }
+    <head>
+        <meta charset="utf-8">
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="/lib/techan.min.js"></script>
+        <link href="styles.css" rel="stylesheet">
+    </head>
 
-    text {
-        fill: #000;
-    }
-
-    button {
-        position: absolute;
-        right: 20px;
-        top: 440px;
-        display: none;
-    }
-
-    .atr path {
-        fill: none;
-        stroke-width: 1;
-        stroke: #000000;
-    }
-
-</style>
 <body>
 <button>Update</button>
-<script src="http://d3js.org/d3.v4.min.js"></script>
-<script src="http://techanjs.org/techan.min.js"></script>
 <script>
 
     var margin = {top: 20, right: 20, bottom: 30, left: 50},

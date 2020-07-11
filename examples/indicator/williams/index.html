@@ -1,112 +1,92 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style>
+<html lang="en">
 
-    body {
-        font: 10px sans-serif;
-    }
+    <head>
+        <meta charset="utf-8">
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="/lib/techan.min.js"></script>
+        <link href="styles.css" rel="stylesheet">
+    </head>
 
-    text {
-        fill: #000;
-    }
+    <body>
+        <button>Update</button>
+        <script>
 
-    button {
-        position: absolute;
-        right: 20px;
-        top: 440px;
-        display: none;
-    }
+            var margin = { top: 20, right: 20, bottom: 30, left: 50 },
+                width = 960 - margin.left - margin.right,
+                height = 500 - margin.top - margin.bottom;
 
-    .williams path {
-        fill: none;
-        stroke-width: 1;
-    }
+            var parseDate = d3.timeParse("%d-%b-%y");
 
-    .williams.up {
-        stroke: #006600;
-        stroke-width: 1.5;
-    }
+            var x = techan.scale.financetime()
+                .range([0, width]);
 
-</style>
-<body>
-<button>Update</button>
-<script src="http://d3js.org/d3.v4.min.js"></script>
-<script src="http://techanjs.org/techan.min.js"></script>
-<script>
+            var y = d3.scaleLinear()
+                .range([height, 0]);
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 50},
-            width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+            var williams = techan.plot.williams()
+                .xScale(x)
+                .yScale(y);
 
-    var parseDate = d3.timeParse("%d-%b-%y");
+            var xAxis = d3.axisBottom(x);
 
-    var x = techan.scale.financetime()
-            .range([0, width]);
+            var yAxis = d3.axisLeft(y)
+                .tickFormat(d3.format(",.3s"));
 
-    var y = d3.scaleLinear()
-            .range([height, 0]);
+            var svg = d3.select("body").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var williams = techan.plot.williams()
-            .xScale(x)
-            .yScale(y);
+            d3.csv("data.csv", function (error, data) {
+                var accessor = williams.accessor();
 
-    var xAxis = d3.axisBottom(x);
+                data = data.map(function (d) {
+                    // Open, high, low, close generally not required, is being used here to demonstrate colored volume
+                    // bars
+                    return {
+                        date: parseDate(d.Date),
+                        volume: +d.Volume,
+                        open: +d.Open,
+                        high: +d.High,
+                        low: +d.Low,
+                        close: +d.Close
+                    };
+                }).sort(function (a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
 
-    var yAxis = d3.axisLeft(y)
-            .tickFormat(d3.format(",.3s"));
+                svg.append("g")
+                    .attr("class", "williams");
 
-    var svg = d3.select("body").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")");
 
-    d3.csv("data.csv", function(error, data) {
-        var accessor = williams.accessor();
+                svg.append("g")
+                    .attr("class", "y axis")
+                    .append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 6)
+                    .attr("dy", ".71em")
+                    .style("text-anchor", "end")
+                    .text("William %R");
 
-        data = data.map(function(d) {
-            // Open, high, low, close generally not required, is being used here to demonstrate colored volume
-            // bars
-            return {
-                date: parseDate(d.Date),
-                volume: +d.Volume,
-                open: +d.Open,
-                high: +d.High,
-                low: +d.Low,
-                close: +d.Close
-            };
-        }).sort(function(a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
+                // Data to display initially
+                draw(data.slice(0, data.length - 20));
+                // Only want this button to be active if the data has loaded
+                d3.select("button").on("click", function () { draw(data); }).style("display", "inline");
+            });
 
-        svg.append("g")
-                .attr("class", "williams");
+            function draw(data) {
+                var williamsData = techan.indicator.williams()(data);
+                x.domain(williamsData.map(williams.accessor().d));
+                y.domain(techan.scale.plot.williams().domain());
 
-        svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + height + ")");
+                svg.selectAll("g.williams").datum(williamsData).call(williams);
+                svg.selectAll("g.x.axis").call(xAxis);
+                svg.selectAll("g.y.axis").call(yAxis);
+            }
 
-        svg.append("g")
-                .attr("class", "y axis")
-                .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 6)
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
-                .text("William %R");
+        </script>
 
-        // Data to display initially
-        draw(data.slice(0, data.length-20));
-        // Only want this button to be active if the data has loaded
-        d3.select("button").on("click", function() { draw(data); }).style("display", "inline");
-    });
-
-    function draw(data) {
-        var williamsData = techan.indicator.williams()(data);
-        x.domain(williamsData.map(williams.accessor().d));
-        y.domain(techan.scale.plot.williams().domain());
-
-        svg.selectAll("g.williams").datum(williamsData).call(williams);
-        svg.selectAll("g.x.axis").call(xAxis);
-        svg.selectAll("g.y.axis").call(yAxis);
-    }
-
-</script>
+</html>

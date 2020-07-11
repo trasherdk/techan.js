@@ -1,121 +1,92 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<style>
+<html lang="en">
 
-    body {
-        font: 10px sans-serif;
-    }
+    <head>
+        <meta charset="utf-8">
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+        <script src="/lib/techan.min.js"></script>
+        <link href="styles.css" rel="stylesheet">
+    </head>
 
-    text {
-        fill: #000;
-    }
+    <body>
+        <button>Update</button>
+        <script>
 
-    button {
-        position: absolute;
-        right: 20px;
-        top: 440px;
-        display: none;
-    }
+            var margin = { top: 20, right: 20, bottom: 30, left: 50 },
+                width = 960 - margin.left - margin.right,
+                height = 500 - margin.top - margin.bottom;
 
-    .stochastic path {
-        fill: none;
-        stroke-width: 1;
-    }
-    
-    .stochastic.up {
-        stroke: #00AA00;
-    }
+            var parseDate = d3.timeParse("%d-%b-%y");
 
-    .stochastic.down {
-        stroke: #FF0000;
-    }
+            var x = techan.scale.financetime()
+                .range([0, width]);
 
-    .stochastic path.overbought, .stochastic path.oversold {
-        stroke: #FF9999;
-        stroke-dasharray: 5, 5;
-    }
+            var y = d3.scaleLinear()
+                .range([height, 0]);
 
+            var stochastic = techan.plot.stochastic()
+                .xScale(x)
+                .yScale(y);
 
-</style>
-<body>
-<button>Update</button>
-<script src="http://d3js.org/d3.v4.min.js"></script>
-<script src="http://techanjs.org/techan.min.js"></script>
-<script>
+            var xAxis = d3.axisBottom(x);
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 50},
-            width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+            var yAxis = d3.axisLeft(y)
+                .tickFormat(d3.format(",.3s"));
 
-    var parseDate = d3.timeParse("%d-%b-%y");
+            var svg = d3.select("body").append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-    var x = techan.scale.financetime()
-            .range([0, width]);
+            d3.csv("data.csv", function (error, data) {
+                var accessor = stochastic.accessor();
 
-    var y = d3.scaleLinear()
-            .range([height, 0]);
+                data = data.map(function (d) {
+                    // Open, high, low, close generally not required, is being used here to demonstrate colored volume
+                    // bars
+                    return {
+                        date: parseDate(d.Date),
+                        volume: +d.Volume,
+                        open: +d.Open,
+                        high: +d.High,
+                        low: +d.Low,
+                        close: +d.Close
+                    };
+                }).sort(function (a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
 
-    var stochastic = techan.plot.stochastic()
-            .xScale(x)
-            .yScale(y);
+                svg.append("g")
+                    .attr("class", "stochastic");
 
-    var xAxis = d3.axisBottom(x);
+                svg.append("g")
+                    .attr("class", "x axis")
+                    .attr("transform", "translate(0," + height + ")");
 
-    var yAxis = d3.axisLeft(y)
-            .tickFormat(d3.format(",.3s"));
+                svg.append("g")
+                    .attr("class", "y axis")
+                    .append("text")
+                    .attr("transform", "rotate(-90)")
+                    .attr("y", 6)
+                    .attr("dy", ".71em")
+                    .style("text-anchor", "end")
+                    .text("Stochastic Oscillator");
 
-    var svg = d3.select("body").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                // Data to display initially
+                draw(data.slice(0, data.length - 20));
+                // Only want this button to be active if the data has loaded
+                d3.select("button").on("click", function () { draw(data); }).style("display", "inline");
+            });
 
-    d3.csv("data.csv", function(error, data) {
-        var accessor = stochastic.accessor();
+            function draw(data) {
+                var stochasticData = techan.indicator.stochastic()(data);
+                x.domain(stochasticData.map(stochastic.accessor().d));
+                y.domain(techan.scale.plot.stochastic().domain());
 
-        data = data.map(function(d) {
-            // Open, high, low, close generally not required, is being used here to demonstrate colored volume
-            // bars
-            return {
-                date: parseDate(d.Date),
-                volume: +d.Volume,
-                open: +d.Open,
-                high: +d.High,
-                low: +d.Low,
-                close: +d.Close
-            };
-        }).sort(function(a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
+                svg.selectAll("g.stochastic").datum(stochasticData).call(stochastic);
+                svg.selectAll("g.x.axis").call(xAxis);
+                svg.selectAll("g.y.axis").call(yAxis);
+            }
 
-        svg.append("g")
-                .attr("class", "stochastic");
+        </script>
 
-        svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + height + ")");
-
-        svg.append("g")
-                .attr("class", "y axis")
-                .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 6)
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
-                .text("Stochastic Oscillator");
-
-        // Data to display initially
-        draw(data.slice(0, data.length-20));
-        // Only want this button to be active if the data has loaded
-        d3.select("button").on("click", function() { draw(data); }).style("display", "inline");
-    });
-
-    function draw(data) {
-        var stochasticData = techan.indicator.stochastic()(data);
-        x.domain(stochasticData.map(stochastic.accessor().d));
-        y.domain(techan.scale.plot.stochastic().domain());
-
-        svg.selectAll("g.stochastic").datum(stochasticData).call(stochastic);
-        svg.selectAll("g.x.axis").call(xAxis);
-        svg.selectAll("g.y.axis").call(yAxis);
-    }
-
-</script>
+</html>

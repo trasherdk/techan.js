@@ -1,0 +1,38 @@
+body {
+  font: 10px sans-serif;
+}
+
+text {
+  fill: #000;
+}
+
+button {
+  position: absolute;
+  left: 10px;
+  top: 5px;
+  display: none;
+}
+
+path {
+  fill: none;
+  stroke-width: 1;
+}
+
+path.macd {
+  stroke: #0000AA;
+}
+
+path.signal {
+  stroke: #FF9999;
+}
+
+path.zero {
+  stroke: #BBBBBB;
+  stroke-dasharray: 0;
+  stroke-opacity: 0.5;
+}
+
+path.difference {
+  fill: #BBBBBB;
+  opacity: 0.5;
+}
