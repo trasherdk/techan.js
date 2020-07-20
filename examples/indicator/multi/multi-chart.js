@@ -1,5 +1,5 @@
 
-function chart(name, symbol, currency, fullWidth, fullHeight) {
+async function chart(name, symbol, currency, fullWidth, fullHeight) {
   var margin = { top: 50, right: 75, bottom: 50, left: 75 },
     width = fullWidth - margin.left - margin.right,
     height = fullHeight - margin.top - margin.bottom,
@@ -122,7 +122,7 @@ function chart(name, symbol, currency, fullWidth, fullHeight) {
 
   console.log(str);
 
-  d3.json(defparam.dataurl + str, (error, data) => {
+  await d3.json(defparam.dataurl + str, (error, data) => {
 
     var accessor = candlestick.accessor(),
       indicatorPreRoll = 33;  // Don't show where indicators don't have data
