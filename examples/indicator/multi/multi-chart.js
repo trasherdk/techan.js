@@ -1,65 +1,65 @@
 
 async function chart(name, symbol, currency, fullWidth, fullHeight) {
-  var margin = { top: 50, right: 75, bottom: 50, left: 75 },
+  let margin = { top: 50, right: 75, bottom: 50, left: 75 },
     width = fullWidth - margin.left - margin.right,
     height = fullHeight - margin.top - margin.bottom,
     volumeHeight = fullHeight * 0.25;
 
-  var parseDate = d3.timeParse("%d-%b-%y");
-  //		var parseDate = d3.timeParse("%h:%m");
+  //  let parseDate = d3.timeParse("%d-%b-%y");
+  //  let parseDate = d3.timeParse("%h:%m");
 
-  var zoom = d3.zoom()
+  let zoom = d3.zoom()
     .on("zoom", zoomed);
 
-  var x = techan.scale.financetime()
+  let x = techan.scale.financetime()
     .range([0, width]);
 
-  var y = d3.scaleLinear()
+  let y = d3.scaleLinear()
     .range([height, 0]);
 
-  var yPercent = y.copy();   // Same as y at this stage, will get a different domain later
+  let yPercent = y.copy();   // Same as y at this stage, will get a different domain later
 
-  var yVolume = d3.scaleLinear()
+  let yVolume = d3.scaleLinear()
     .range([height, height - volumeHeight]);
 
-  var yInit, yPercentInit, zoomableInit;
+  let yInit, yPercentInit, zoomableInit;
 
-  var candlestick = techan.plot.candlestick()
+  let candlestick = techan.plot.candlestick()
     .xScale(x)
     .yScale(y);
 
-  var sma0 = techan.plot.sma()
+  let sma0 = techan.plot.sma()
     .xScale(x)
     .yScale(y);
 
-  var sma1 = techan.plot.sma()
+  let sma1 = techan.plot.sma()
     .xScale(x)
     .yScale(y);
 
-  var ema2 = techan.plot.ema()
+  let ema2 = techan.plot.ema()
     .xScale(x)
     .yScale(y);
 
-  var volume = techan.plot.volume()
+  let volume = techan.plot.volume()
     .accessor(candlestick.accessor())   // Set the accessor to a ohlc accessor so we get highlighted bars
     .xScale(x)
     .yScale(yVolume);
 
-  var xAxis = d3.axisBottom(x);
+  let xAxis = d3.axisBottom(x);
   //                .ticks(4);
 
-  var yAxis = d3.axisRight(y);
+  let yAxis = d3.axisRight(y);
   //                .ticks(4);
 
-  var percentAxis = d3.axisLeft(yPercent)
+  let percentAxis = d3.axisLeft(yPercent)
     .ticks(4)
     .tickFormat(d3.format('+.1%'));
 
-  var volumeAxis = d3.axisRight(yVolume)
+  let volumeAxis = d3.axisRight(yVolume)
     .ticks(2)
     .tickFormat(d3.format(",.3s"));
 
-  var svg = d3.select("body").append("svg")
+  let svg = d3.select("body").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
@@ -118,13 +118,13 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     .attr("height", height)
     .call(zoom);
 
-  var str = defparam[params.res].url + "?fsym=" + symbol + "&tsym=" + currency + "&limit=" + (params.limit ? params.limit : defparam[params.res].limit);
+  let str = defparam[params.res].url + "?fsym=" + symbol + "&tsym=" + currency + "&limit=" + (params.limit ? params.limit : defparam[params.res].limit);
 
   console.log(str);
 
   await d3.json(defparam.dataurl + str, (error, data) => {
 
-    var accessor = candlestick.accessor(),
+    let accessor = candlestick.accessor(),
       indicatorPreRoll = 33;  // Don't show where indicators don't have data
 
     data = data.Data.map(function (d) {
