@@ -5,7 +5,9 @@
     <meta charset="utf-8">
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <script src="https://techanjs.org/techan.min.js"></script>
+
     <link href="styles.css" rel="stylesheet">
+		<!--script src="/lib/library.js"></script-->
   </head>
 
   <body>
@@ -38,21 +40,23 @@
         .append("g")
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-      d3.csv("data.csv", function (error, data) {
+      URL="https://min-api.cryptocompare.com/data/histominute?tsym=EUR&fsym=XMR&limit=240";
+
+      d3.json(URL, (error, data) => {
         var accessor = ohlc.accessor();
 
-        data = data.slice(0, 200).map(function (d) {
+        data = data.Data.map(function (d) {
           return {
-            date: parseDate(d.Date),
-            open: +d.Open,
-            high: +d.High,
-            low: +d.Low,
-            close: +d.Close,
-            volume: +d.Volume
+            date: new Date(d.time * 1000),
+            open: +d.open,
+            high: +d.high,
+            low: +d.low,
+            close: +d.close,
+            volume: +d.volumefrom
           };
         }).sort( (a, b) => {
             return d3.ascending(accessor.d(a), accessor.d(b)); 
-          });
+        });
 
         x.domain(data.map(accessor.d));
         y.domain(techan.scale.plot.ohlc(data, accessor).domain());
@@ -74,7 +78,7 @@
           .text("Price ($)");
 
         // Data to display initially
-        draw(data.slice(0, data.length - 20));
+        draw(data);
         // Only want this button to be active if the data has loaded
         // d3.select("button").on("click", function () { draw(data); }).style("display", "inline");
       });
