@@ -44,7 +44,7 @@
 
       URL="https://min-api.cryptocompare.com/data/histominute?tsym=EUR&fsym=XMR&limit=240";
 
-      d3.json(URL, function (error, data) {
+      d3.json(URL, (error, data) => {
         var accessor = candlestick.accessor();
 
         data = data.Data.map(function (d) {
@@ -57,8 +57,7 @@
             volume: +d.volumeto
           };
         })
-        .sort(function (a, b)
-        {
+        .sort( (a, b) => {
           return d3.ascending(accessor.d(a), accessor.d(b)); 
         });
 
