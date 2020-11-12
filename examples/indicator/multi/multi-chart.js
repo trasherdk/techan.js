@@ -8,6 +8,13 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
   //  let parseDate = d3.timeParse("%d-%b-%y");
   //  let parseDate = d3.timeParse("%h:%m");
 
+  const root = document.getElementsByTagName("container")[0];
+  const chart = document.createElement("chart");
+  chart.setAttribute("id", name);
+  chart.style.cssText = `max-width: ${fullWidth}; max-height: ${fullHeight}`;
+  //chart.setAttribute("style",`max-height: ${fullHeight}`);
+  root.appendChild(chart);
+
   let zoom = d3.zoom()
     .on("zoom", zoomed);
 
@@ -59,7 +66,7 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     .ticks(2)
     .tickFormat(d3.format(",.3s"));
 
-  let svg = d3.select("body").append("svg")
+  let svg = d3.select(`#${name}`).append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
