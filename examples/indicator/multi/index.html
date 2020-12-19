@@ -3,10 +3,14 @@
 
 	<head>
 		<meta charset="utf-8">
+		<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="0" />
 		<script src="https://d3js.org/d3.v4.js"></script>
 		<script src="/lib/techan.min.js"></script>
 		<script src="/lib/library.js"></script>
 
+		<link href="styles.css" rel="stylesheet">
 		<link href="multi-chart.css" rel="stylesheet">
 		<script src="multi-chart.js"></script>
 		<style>
@@ -15,7 +19,9 @@
 	</head>
 
 	<body>
-		<container></container>
+		<div class="header"></div>
+		
+		<div class="container"></div>
 		<script>
 
 			let params = getSearchParameters();
