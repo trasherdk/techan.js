@@ -3,3 +3,21 @@
   padding: 0;
   box-sizing: border-box
 }
+
+.header {
+  background-color: #1387b5;
+  min-height: 3ch;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  gap: 1ch;
+  margin-top: 3px;
+}
+
+.chart {
+  display: inline-block;
+  border: 1px solid darkgray;
+}
