@@ -8,9 +8,10 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
   //  let parseDate = d3.timeParse("%d-%b-%y");
   //  let parseDate = d3.timeParse("%h:%m");
 
-  const root = document.getElementsByTagName("container")[0];
+  const root = document.getElementsByClassName("container")[0];
   const chart = document.createElement("chart");
   chart.setAttribute("id", name);
+  chart.setAttribute("class","chart");
   chart.style.cssText = `max-width: ${fullWidth}; max-height: ${fullHeight}`;
   //chart.setAttribute("style",`max-height: ${fullHeight}`);
   root.appendChild(chart);
@@ -83,7 +84,7 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
   svg.append('text')
     .attr("class", "symbol")
     .attr("x", 5)
-    .text(name + " (" + currency + ")");
+    .text(symbol + " (" + currency + ")");
 
   svg.append("g")
     .attr("class", "volume")
