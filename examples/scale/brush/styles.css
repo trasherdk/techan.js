@@ -1,0 +1,67 @@
+body {
+  font: 10px sans-serif;
+}
+
+text {
+  fill: #000;
+}
+
+path.candle {
+  stroke: #000000;
+}
+
+path.candle.body {
+  stroke-width: 0;
+}
+
+path.candle.up {
+  fill: #00AA00;
+  stroke: #00AA00;
+}
+
+path.candle.down {
+  fill: #FF0000;
+  stroke: #FF0000;
+}
+
+path.ohlc {
+  stroke: #000000;
+  stroke-width: 1;
+}
+
+path.ohlc.up {
+  stroke: #00AA00;
+}
+
+path.ohlc.down {
+  stroke: #FF0000;
+}
+
+path.volume {
+  fill: #EEEEEE;
+}
+
+path.line {
+  fill: none;
+  stroke: #BF5FFF;
+  stroke-width: 1;
+}
+
+.extent {
+  stroke: #fff;
+  fill-opacity: .125;
+  shape-rendering: crispEdges;
+}
+
+.crosshair {
+  cursor: crosshair;
+}
+
+.crosshair path.wire {
+  stroke: #DDDDDD;
+  stroke-dasharray: 1, 1;
+}
+
+.crosshair .axisannotation path {
+  fill: #DDDDDD;
+}
