@@ -5,71 +5,71 @@ const margin = { top: 20, right: 20, bottom: 100, left: 50 },
   height = 500 - margin.top - margin.bottom,
   height2 = 500 - margin2.top - margin2.bottom;
 
-var parseDate = d3.timeParse("%d-%b-%y");
+const parseDate = d3.timeParse("%d-%b-%y");
 
-var x = techan.scale.financetime()
+let x = techan.scale.financetime()
   .range([0, width]);
 
-var x2 = techan.scale.financetime()
+let x2 = techan.scale.financetime()
   .range([0, width]);
 
-var y = d3.scaleLinear()
+let y = d3.scaleLinear()
   .range([height, 0]);
 
-var yVolume = d3.scaleLinear()
+let yVolume = d3.scaleLinear()
   .range([y(0), y(0.3)]);
 
-var y2 = d3.scaleLinear()
+let y2 = d3.scaleLinear()
   .range([height2, 0]);
 
-var brush = d3.brushX()
+let brush = d3.brushX()
   .extent([[0, 0], [width, height2]])
   .on("end", brushed);
 
-var candlestick = techan.plot.candlestick()
+let candlestick = techan.plot.candlestick()
   .xScale(x)
   .yScale(y);
 
-var volume = techan.plot.volume()
+let volume = techan.plot.volume()
   .xScale(x)
   .yScale(yVolume);
 
-var close = techan.plot.close()
+let close = techan.plot.close()
   .xScale(x2)
   .yScale(y2);
 
-var xAxis = d3.axisBottom(x);
+let xAxis = d3.axisBottom(x);
 
-var xAxis2 = d3.axisBottom(x2);
+let xAxis2 = d3.axisBottom(x2);
 
-var yAxis = d3.axisLeft(y);
+let yAxis = d3.axisLeft(y);
 
-var yAxis2 = d3.axisLeft(y2)
+let yAxis2 = d3.axisLeft(y2)
   .ticks(0);
 
-var ohlcAnnotation = techan.plot.axisannotation()
+let ohlcAnnotation = techan.plot.axisannotation()
   .axis(yAxis)
   .orient('left')
   .format(d3.format(',.2f'));
 
-var timeAnnotation = techan.plot.axisannotation()
+let timeAnnotation = techan.plot.axisannotation()
   .axis(xAxis)
   .orient('bottom')
   .format(d3.timeFormat('%Y-%m-%d'))
   .width(65)
   .translate([0, height]);
 
-var crosshair = techan.plot.crosshair()
+let crosshair = techan.plot.crosshair()
   .xScale(x)
   .yScale(y)
   .xAnnotation(timeAnnotation)
   .yAnnotation(ohlcAnnotation);
 
-var svg = d3.select("body").append("svg")
+let svg = d3.select("#brushed").append("svg")
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom);
 
-var focus = svg.append("g")
+let focus = svg.append("g")
   .attr("class", "focus")
   .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
