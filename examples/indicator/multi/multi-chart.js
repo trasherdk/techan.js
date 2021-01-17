@@ -16,6 +16,16 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
   //chart.setAttribute("style",`max-height: ${fullHeight}`);
   root.appendChild(chart);
 
+  await d3.json("https://cdn.jsdelivr.net/npm/d3-time-format@3/locale/da-DK.json", function(error, locale) {
+    if (error) throw error;
+
+    d3.timeFormatDefaultLocale(locale);
+
+    var format = d3.timeFormat("%c");
+
+    console.log(format(new Date)); // понедельник,  5 декабря 2016 г. 10:31:59
+  });
+
   let zoom = d3.zoom()
     .on("zoom", zoomed);
 
@@ -53,7 +63,7 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     .xScale(x)
     .yScale(yVolume);
 
-  let xAxis = d3.axisBottom(x);
+  let xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%H:%M")).ticks(8);
   //                .ticks(4);
 
   let yAxis = d3.axisRight(y);
