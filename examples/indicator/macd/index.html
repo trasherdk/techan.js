@@ -2,89 +2,37 @@
 <html lang="en">
 
   <head>
-    <meta charset="utf-8">
-    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>MACD</title>
+    <link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16"> 
+    <script src="https://d3js.org/d3.v4.js"></script>
     <script src="/lib/techan.min.js"></script>
+
     <link href="styles.css" rel="stylesheet">
+    <link href="macd-chart.css" rel="stylesheet">
+    <script src="macd-chart.js"></script>
   </head>
 
-<body>
-<button>Update</button>
-<script>
+  <body>
+    <div id="macd-chart">
 
-    var margin = {top: 20, right: 20, bottom: 30, left: 50},
-            width = 960 - margin.left - margin.right,
-            height = 500 - margin.top - margin.bottom;
+    </div>
 
-    var parseDate = d3.timeParse("%d-%b-%y");
+    <script>
+      const URL = "https://min-api.cryptocompare.com/data/histominute?fsym=XMR&tsym=EUR&limit=330&aggregate=5&e=Kraken&extraParams=test-app-v1";
 
-    var x = techan.scale.financetime()
-            .range([0, width]);
+      d3.json(URL, (error, data) => {
+        if (error) {
+          console.error(error);
+          return false;
+        }
+        d3.select("#macd-chart").call(macdChart(d3, techan, data.Data));
+      });
+    </script>
+  </body>
 
-    var y = d3.scaleLinear()
-            .range([height, 0]);
-
-    var macd = techan.plot.macd()
-            .xScale(x)
-            .yScale(y);
-
-    var xAxis = d3.axisBottom(x);
-
-    var yAxis = d3.axisLeft(y)
-            .tickFormat(d3.format(",.3s"));
-
-    var svg = d3.select("body").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    d3.csv("data.csv", function(error, data) {
-        var accessor = macd.accessor();
-
-        data = data.slice(0, 200).map(function(d) {
-            // Open, high, low, close generally not required, is being used here to demonstrate colored volume
-            // bars
-            return {
-                date: parseDate(d.Date),
-                volume: +d.Volume,
-                open: +d.Open,
-                high: +d.High,
-                low: +d.Low,
-                close: +d.Close
-            };
-        }).sort(function(a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
-
-        svg.append("g")
-                .attr("class", "macd");
-
-        svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + height + ")");
-
-        svg.append("g")
-                .attr("class", "y axis")
-            .append("text")
-                .attr("transform", "rotate(-90)")
-                .attr("y", 6)
-                .attr("dy", ".71em")
-                .style("text-anchor", "end")
-                .text("MACD");
-
-        // Data to display initially
-        draw(data.slice(0, data.length-20));
-        // Only want this button to be active if the data has loaded
-        d3.select("button").on("click", function() { draw(data); }).style("display", "inline");
-    });
-
-    function draw(data) {
-        var macdData = techan.indicator.macd()(data);
-        x.domain(macdData.map(macd.accessor().d));
-        y.domain(techan.scale.plot.macd(macdData).domain());
-
-        svg.selectAll("g.macd").datum(macdData).call(macd);
-        svg.selectAll("g.x.axis").call(xAxis);
-        svg.selectAll("g.y.axis").call(yAxis);
-    }
-
-</script>
+</html>
