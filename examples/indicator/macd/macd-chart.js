@@ -25,7 +25,7 @@ function macdChart(d3, techan, feed) {
     // Open, high, low, close generally not required, is being used here to demonstrate colored volume
     // bars
     return {
-      time: new Date(d.time * 1000),
+      date: new Date(d.time * 1000),
       volume: +d.volumefrom,
       open: +d.open,
       high: +d.high,
