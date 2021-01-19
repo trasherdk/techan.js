@@ -130,7 +130,7 @@ async function brushChart(d3, techan, feed) {
     .attr("class", "y axis")
     .call(yAxis2);
 
-  var result = d3.csv("data.csv", function (error, data) {
+  await d3.csv("data.csv", function (error, data) {
     var accessor = candlestick.accessor(),
       timestart = Date.now();
 
