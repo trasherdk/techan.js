@@ -148,7 +148,7 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     data = data.Data.map(function (d) {
       return {
         date: new Date(d.time * 1000),  // new Date(d.time * 1000),
-        volume: +d.volumeto,
+        volume: +d.volumefrom,
         open: +d.open,
         high: +d.high,
         low: +d.low,
