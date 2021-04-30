@@ -1,9 +1,9 @@
 
 async function chart(name, symbol, currency, fullWidth, fullHeight) {
-  let margin = { top: 50, right: 75, bottom: 50, left: 75 },
-    width = fullWidth - margin.left - margin.right,
-    height = fullHeight - margin.top - margin.bottom,
-    volumeHeight = fullHeight * 0.25;
+  let margin = { top: 50, right: 75, bottom: 50, left: 75 }
+  let width = Math.floor(fullWidth - margin.left - margin.right)
+  let height = Math.floor(fullHeight - margin.top - margin.bottom)
+  let volumeHeight = fullHeight * 0.25
 
   //  let parseDate = d3.timeParse("%d-%b-%y");
   //  let parseDate = d3.timeParse("%h:%m");
@@ -12,7 +12,8 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
   const chart = document.createElement("chart");
   chart.setAttribute("id", name);
   chart.setAttribute("class","chart");
-  chart.style.cssText = `max-width: ${fullWidth}; max-height: ${fullHeight}`;
+  chart.style.maxWidth = Math.floor(fullWidth)
+  chart.style.maxHeight =  fullHeight
   //chart.setAttribute("style",`max-height: ${fullHeight}`);
   root.appendChild(chart);
 
@@ -23,7 +24,7 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
 
     var format = d3.timeFormat("%c");
 
-    console.log(format(new Date)); // понедельник,  5 декабря 2016 г. 10:31:59
+    console.log(format(new Date)); // mandag den 15 februar 2021 12:03:41
   });
 
   let zoom = d3.zoom()
@@ -63,7 +64,18 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     .xScale(x)
     .yScale(yVolume);
 
-  let xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat("%H:%M")).ticks(8);
+  let format;
+  switch(true) {
+    case params.res === "hour":
+      format = " %d / %m"
+      break
+    case params.res === "minute":
+    default:
+      format = "%H:%M"
+      break
+    }
+
+  let xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat(format)).ticks(8);
   //                .ticks(4);
 
   let yAxis = d3.axisRight(y);
@@ -137,7 +149,7 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     .call(zoom);
 
   let str = defparam[params.res].url + "?fsym=" + symbol + "&tsym=" + currency + "&limit=" + (params.limit ? params.limit : defparam[params.res].limit);
-
+  str += "&aggregate=" + (params.agg ? params.agg : defparam.aggregate);
   console.log(str);
 
   await d3.json(defparam.dataurl + str, (error, data) => {
@@ -148,7 +160,7 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     data = data.Data.map(function (d) {
       return {
         date: new Date(d.time * 1000),  // new Date(d.time * 1000),
-        volume: +d.volumefrom,
+        volume: +d.volumeto,
         open: +d.open,
         high: +d.high,
         low: +d.low,
