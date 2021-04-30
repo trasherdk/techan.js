@@ -18,7 +18,7 @@ const defparam = {
 	exchange: 'Kraken',
 	crypto: 'XMR',
 	currency: 'EUR',
-	resolution: 15,
+	aggregate: 1,
 	minute : {
 					url: 'histominute',
 					limit: 720 // (12 * 60)
@@ -64,7 +64,7 @@ function checkParams(paramobj) {
 	const { url, limit } = getResolution(paramobj);
 
 	paramobj.resurl = url;
-	paramobj.resolution = ( paramobj.resolution ? paramobj.resolution : defparam.resolution );
+	paramobj.agg = ( paramobj.agg ? paramobj.agg : defparam.aggregate );
 	paramobj.e = ( paramobj.e ? paramobj.e : defparam.exchange );
 	paramobj.currency = ( paramobj.currency ? paramobj.currency : defparam.currency );
 	paramobj.crypto = ( paramobj.crypto ? paramobj.crypto : defparam.crypto );
@@ -79,13 +79,13 @@ function getURL(paramobj) {
 	url += '?fsym=' + paramobj.currency;
 	url += '&tsym=' + paramobj.crypto;
 	url += '&limit=' + paramobj.limit;
-
+	url += '&aggregate=' + paramobj.agg;
 	return url;
 }
 
 function getSearchParameters() {
 		let paramstr = window.location.search.substr(1);
-	  return paramstr != null && paramstr != "" ? transformToAssocArray(paramstr) : {};
+	  return paramstr != null && paramstr !== "" ? transformToAssocArray(paramstr) : {};
 }
 
 function transformToAssocArray( prmstr ) {
