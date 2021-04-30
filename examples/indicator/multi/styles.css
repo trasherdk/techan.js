@@ -4,20 +4,37 @@
   box-sizing: border-box
 }
 
+body {
+  font-size: 16px;
+  background-color: #dff;
+}
+
 .header {
-  background-color: #1387b5;
-  min-height: 3ch;
+	position: fixed;
+	top: 0;
+	background-color: #1387b5;
+	margin-bottom: 0.8rem;
+	min-height: 3rem;
+	width: 100%;
 }
-
 .container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
-  gap: 1ch;
-  margin-top: 3px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-evenly;
+	gap: 1rem;
+	margin-top: 4rem;
+	margin-bottom: 4rem;
 }
-
 .chart {
   display: inline-block;
+  background-color: #eee;
   border: 1px solid darkgray;
+}
+.footer {
+	position: fixed;
+	bottom: 0;
+	background-color: #1387b5;
+	margin-top: 14px;
+	min-height: 3rem;
+	width: 100%;
 }

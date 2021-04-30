@@ -22,8 +22,9 @@
 
 	<body>
 		<div class="header"></div>
-		
 		<div class="container"></div>
+		<div class="footer"></div>
+
 		<script>
 
 			let params = getSearchParameters();
@@ -31,7 +32,7 @@
 			params.crypto = (params.crypto ? params.crypto : "XMR,BTC");
 			params.currency = (params.currency ? params.currency : "EUR");
 			params.res = (params.res ? params.res : "minute");
-
+			params.agg = (params.agg ? params.agg : 1);
 			console.log("Parameters", params);
 			document.title = "Multi: " + params.crypto + "-" + params.currency;
 
