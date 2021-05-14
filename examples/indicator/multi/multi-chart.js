@@ -69,7 +69,12 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     case params.res === "hour":
       format = " %d / %m"
       break
-    case params.res === "minute":
+    case (params.res === "minute" && params.limit < 1441):
+      format = "%H:%M"
+      break
+    case (params.res === "minute" && params.limit > 1440):
+      format = "%H:%M\n%d/%m"
+      break
     default:
       format = "%H:%M"
       break
@@ -155,7 +160,7 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
   await d3.json(defparam.dataurl + str, (error, data) => {
 
     let accessor = candlestick.accessor(),
-      indicatorPreRoll = 33;  // Don't show where indicators don't have data
+      indicatorPreRoll = params.res === 'minute' ? 15 : 6;  // Don't show where indicators don't have data
 
     data = data.Data.map(function (d) {
       return {
