@@ -1,0 +1,16 @@
+body {
+  font: 13px sans-serif;
+}
+
+ul {
+  list-style-type: none;
+  margin: 0.5em 0em 0.5em 0em;
+  width: 100%;
+}
+
+ul li {
+  display: table-cell;
+  vertical-align: middle;
+  margin: 0em;
+  padding: 0em 1em;
+}
