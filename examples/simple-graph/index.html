@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <title>One Graph</title>
+    <link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16"> 
+    <script src="https://d3js.org/d3.v4.js"></script>
+
+    <link href="styles.css" rel="stylesheet">
+		<link href="simple-graph.css" rel="stylesheet">
+    <script src="simple-graph.js"></script>
+  </head>
+
+  <body>
+    <div id="chart1" class="chart"></div>
+    <script>
+      graph = new SimpleGraph("chart1", {
+        "xmax": 60, "xmin": 0,
+        "ymax": 40, "ymin": 0,
+        "title": "Simple Graph Example",
+        "xlabel": "X Axis",
+        "ylabel": "Y Axis"
+      });
+    </script>
+  </body>
+
+</html>
