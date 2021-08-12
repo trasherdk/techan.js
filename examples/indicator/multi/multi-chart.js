@@ -66,6 +66,9 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
 
   let format;
   switch(true) {
+    case params.res === 'day':
+      format = "%m %y"
+      break
     case params.res === "hour":
       format = " %d / %m"
       break
@@ -80,7 +83,8 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
       break
     }
 
-  let xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat(format)).ticks(8);
+  let xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat(format))
+  // .ticks(8);
   //                .ticks(4);
 
   let yAxis = d3.axisRight(y);

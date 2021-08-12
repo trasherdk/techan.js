@@ -19,8 +19,8 @@
     }
 
     path.candle.up {
-        fill: #00AA00;
-        stroke: #00AA00;
+        fill: hsl(120, 98%, 50%);
+        stroke: #07f73b;
     }
 
     path.candle.down {
@@ -29,7 +29,15 @@
     }
 
     path.volume {
-        fill: #494949;
+        fill: #c3c3c3;
+    }
+
+    path.volume.up {
+        fill: #a5f58c;
+    }
+
+    path.volume.down {
+        fill: #fc8484;
     }
 
     rect.pane {

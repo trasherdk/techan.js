@@ -1,40 +1,48 @@
+html {
+	box-sizing: border-box;
+}
+
 *, *::after, *::before {
   margin: 0;
   padding: 0;
-  box-sizing: border-box
+  box-sizing: inherit;
 }
 
 body {
   font-size: 16px;
   background-color: #4a5e5e;
+	overflow-y: clip;
 }
 
 .header {
-	position: fixed;
+	position: sticky;
 	top: 0;
 	background-color: #1387b5;
-	margin-bottom: 0.8rem;
+	/* margin-bottom: 0.8rem; */
 	min-height: 3rem;
 	width: 100%;
 }
 .container {
 	display: flex;
 	flex-wrap: wrap;
-	justify-content: space-evenly;
+	justify-content: space-around;
 	gap: 1rem;
+	margin: 1rem;
+	/*
 	margin-top: 4rem;
 	margin-bottom: 4rem;
+	*/
 }
 .chart {
-  display: inline-block;
-  background-color: #eee;
+  display: block;
+  background-color: rgb(255, 255, 255);
   border: 1px solid darkgray;
 }
 .footer {
-	position: fixed;
-	bottom: 0;
+	/* position: absolute;
+	bottom: 0; */
 	background-color: #1387b5;
-	margin-top: 14px;
+	/* margin-top: 14px; */
 	min-height: 3rem;
 	width: 100%;
 }
