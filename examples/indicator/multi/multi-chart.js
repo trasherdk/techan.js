@@ -11,20 +11,20 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
   const root = document.getElementsByClassName("container")[0];
   const chart = document.createElement("chart");
   chart.setAttribute("id", name);
-  chart.setAttribute("class","chart");
+  chart.setAttribute("class", "chart");
   chart.style.maxWidth = Math.floor(fullWidth)
-  chart.style.maxHeight =  fullHeight
+  chart.style.maxHeight = fullHeight
   //chart.setAttribute("style",`max-height: ${fullHeight}`);
   root.appendChild(chart);
-
-  await d3.json("https://cdn.jsdelivr.net/npm/d3-time-format@3/locale/da-DK.json", function(error, locale) {
+  let TimeFormat;
+  await d3.json("https://cdn.jsdelivr.net/npm/d3-time-format@3/locale/da-DK.json", function (error, locale) {
     if (error) throw error;
 
     d3.timeFormatDefaultLocale(locale);
 
-    var format = d3.timeFormat("%c");
+    TimeFormat = d3.timeFormat("%c");
 
-    console.log(format(new Date)); // mandag den 15 februar 2021 12:03:41
+    console.log(TimeFormat(new Date)); // mandag den 15 februar 2021 12:03:41
   });
 
   let zoom = d3.zoom()
@@ -44,6 +44,7 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
   let yInit, yPercentInit, zoomableInit;
 
   let candlestick = techan.plot.candlestick()
+    //let candlestick = techan.plot.ohlc()
     .xScale(x)
     .yScale(y);
 
@@ -65,7 +66,7 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     .yScale(yVolume);
 
   let format;
-  switch(true) {
+  switch (true) {
     case params.res === 'day':
       format = "%m %y"
       break
@@ -81,10 +82,11 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     default:
       format = "%H:%M"
       break
-    }
+  }
 
+  format = d3.timeFormat("%H:%M"); // Force format :(
   let xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat(format))
-  // .ticks(8);
+    .ticks(12);
   //                .ticks(4);
 
   let yAxis = d3.axisRight(y);
