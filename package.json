@@ -24,14 +24,14 @@
     "type": "git",
     "url": "https://github.com/andredumas/techan.js.git"
   },
-  "license" : "MIT",
-  "dependencies": {
-    "d3": "^5.16.0"
-  },
+  "license": "MIT",
   "scripts": {
     "watch": "",
     "start": "",
     "test": ""
+  },
+  "dependencies": {
+    "d3": "^5.16.0"
   },
   "devDependencies": {
     "jasmine-core": "~2.4.1",
