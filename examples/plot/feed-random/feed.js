@@ -1,27 +1,27 @@
 
-var margin = { top: 20, right: 20, bottom: 60, left: 50 },
-  width = 960 - margin.left - margin.right,
-  height = 500 - margin.top - margin.bottom;
+const margin = { top: 20, right: 20, bottom: 60, left: 50 };
+const width = 960 - margin.left - margin.right;
+const height = 500 - margin.top - margin.bottom;
 
-function getRandom(min, max) {
+function getRandom (min, max) {
   return Math.round((Math.random() * (max - min) + min) * 100) / 100;
 }
 
-function getRandomInt(min, max) {
+function getRandomInt (min, max) {
   return Math.round(Math.random() * (max - min) + min + 1);
 }
 
-function randomOHLC(last, increment) { // increment 24H (86400 * 1000)
-  var next = {};
+function randomOHLC (last, increment) { // increment 24H (86400 * 1000)
+  const next = {};
 
   next.date = new Date(last.date.getTime() + increment);
   next.open = last.close;
 
-  var min = last.close - (last.close * 0.02);
-  var max = last.close + (last.close * 0.02);
+  let min = last.close - (last.close * 0.02);
+  const max = last.close + (last.close * 0.02);
   min = (min < 0 ? 0.0001 : min);
-  var v1 = getRandom(min, max);
-  var v2 = getRandom(min, max);
+  const v1 = getRandom(min, max);
+  const v2 = getRandom(min, max);
   next.high = (v1 > v2) ? v1 : v2;
   next.high = (next.high > next.open) ? next.high : next.open;
   next.low = (v1 < v2) ? v1 : v2;
@@ -180,7 +180,7 @@ for (var i = 0; i < 288; i++) {
 
 redraw(feed);
 
-function redraw(data) {
+function redraw (data) {
   var accessor = ohlc.accessor();
 
   x.domain(data.map(accessor.d));
@@ -224,7 +224,7 @@ function redraw(data) {
   }, (Math.random() * 1000) + 400); // Randomly pick an interval to update the chart
 }
 
-function move(coords) {
+function move (coords) {
   coordsText.text(
     timeAnnotation.format()(coords.x) + ", " + ohlcAnnotation.format()(coords.y)
   );
