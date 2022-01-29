@@ -1,6 +1,6 @@
 "use strict";
 
-var lastdata = {
+const lastdata = {
 	time: 0,
 	volume: 0,
 	open: 0,
@@ -19,90 +19,106 @@ const defparam = {
 	crypto: 'XMR',
 	currency: 'EUR',
 	aggregate: 1,
-	minute : {
-					url: 'histominute',
-					limit: 720 // (12 * 60)
+	minute: {
+		url: 'histominute',
+		limit: 720 // (12 * 60)
 	},
-	hour : {
-					url: 'histohour',
-					limit: 168 // (7 * 24)
+	hour: {
+		url: 'histohour',
+		limit: 168 // (7 * 24)
 	},
-	day  : {
-					url: 'histoday',
-					limit: 180 // (6 * 30)
+	day: {
+		url: 'histoday',
+		limit: 180 // (6 * 30)
 	}
 };
 
-const margin = {top: 20, right: 50, bottom: 30, left: 80},
-		width = 600 - margin.left - margin.right,
-		height = 400 - margin.top - margin.bottom;
+const margin = { top: 20, right: 50, bottom: 30, left: 80 };
+const width = 600 - margin.left - margin.right;
+const height = 400 - margin.top - margin.bottom;
 
 
-function _(id) {
-	return document.getElementById(id);
-}
+const _ = (id) => document.getElementById(id)
 
-function getResolution(prmstr) {
-	let res = {};
-	switch(prmstr.res) {
+function getResolution (prmstr) {
+	switch (prmstr.res) {
 		case 'minute':
-			res = defparam.minute;
-			break;
+			return defparam.minute;
 		case 'hour':
-			res = defparam.hour;
-			break;
+			return defparam.hour;
 		case 'day':
-			res = defparam.day;
-			break;
+			return defparam.day;
 		default:
-			res = defparam.minute;
+			return defparam.minute;
 	}
-	return res;
 }
 
-function checkParams(paramobj) {
+const timeAgo = (timestamp, locale = 'en') => {
+	let value;
+	const diff = (new Date().getTime() - timestamp.getTime()) / 1000;
+	const minutes = Math.floor(diff / 60);
+	const hours = Math.floor(minutes / 60);
+	const days = Math.floor(hours / 24);
+	const months = Math.floor(days / 30);
+	const years = Math.floor(months / 12);
+	const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+
+	if (years > 0) {
+		value = rtf.format(0 - years, "year");
+	} else if (months > 0) {
+		value = rtf.format(0 - months, "month");
+	} else if (days > 0) {
+		value = rtf.format(0 - days, "day");
+	} else if (hours > 0) {
+		value = rtf.format(0 - hours, "hour");
+	} else if (minutes > 0) {
+		value = rtf.format(0 - minutes, "minute");
+	} else {
+		value = rtf.format(0 - diff, "second");
+	}
+	return value;
+}
+
+function checkParams (paramobj) {
 	const { url, limit } = getResolution(paramobj);
 
 	paramobj.resurl = url;
-	paramobj.agg = ( paramobj.agg ? paramobj.agg : defparam.aggregate );
-	paramobj.e = ( paramobj.e ? paramobj.e : defparam.exchange );
-	paramobj.currency = ( paramobj.currency ? paramobj.currency : defparam.currency );
-	paramobj.crypto = ( paramobj.crypto ? paramobj.crypto : defparam.crypto );
-	paramobj.limit = ( paramobj.limit ? paramobj.limit : limit );
+	paramobj.agg = (paramobj.agg ? paramobj.agg : defparam.aggregate);
+	paramobj.e = (paramobj.e ? paramobj.e : defparam.exchange);
+	paramobj.currency = (paramobj.currency ? paramobj.currency : defparam.currency);
+	paramobj.crypto = (paramobj.crypto ? paramobj.crypto : defparam.crypto);
+	paramobj.limit = (paramobj.limit ? paramobj.limit : limit);
 
 	return paramobj;
 }
 
-function getURL(paramobj) {
+function getURL (paramobj) {
 	let url = defparam.dataurl + paramobj.resurl;
-//	url += '?e=' + paramobj.e;
-	url += '?fsym=' + paramobj.currency;
-	url += '&tsym=' + paramobj.crypto;
-	url += '&limit=' + paramobj.limit;
-	url += '&aggregate=' + paramobj.agg;
+	//	url += '?e=' + paramobj.e;
+	url += `?fsym=${paramobj.currency}`;
+	url += `&tsym=${paramobj.crypto}`;
+	url += `&limit=${paramobj.limit}`;
+	url += `&aggregate=${paramobj.agg}`;
 	return url;
 }
 
-function getSearchParameters() {
-		let paramstr = window.location.search.substr(1);
-	  return paramstr != null && paramstr !== "" ? transformToAssocArray(paramstr) : {};
-}
-
-function transformToAssocArray( prmstr ) {
-	let params = {};
-	let prmarr = prmstr.split("&");
-	for ( let i = 0; i < prmarr.length; i++) {
-		let tmparr = prmarr[i].split("=");
-		params[tmparr[0]] = tmparr[1];
+function getSearchParameters () {
+	const url = new URL(window.location)
+	const searchParams = new URLSearchParams(url.search)
+	const paramObj = {}
+	for (const key of searchParams.keys()) {
+		paramObj[key] = searchParams.getAll(key).length > 1
+			? searchParams.getAll(key)
+			: searchParams.get(key);
 	}
-	return params;
+	return paramObj
 }
 
-function getReadableHashRateString(hashrate){
-	var i = 0;
-	var byteUnits = [' H', ' KH', ' MH', ' GH', ' TH', ' PH' ];
-	while (hashrate > 1000){
-		hashrate = hashrate / 1000;
+function getReadableHashRateString (hashrate) {
+	let i = 0;
+	const byteUnits = [' H', ' KH', ' MH', ' GH', ' TH', ' PH'];
+	while (hashrate > 1000) {
+		hashrate /= 1000;
 		i++;
 	}
 	return hashrate.toFixed(2) + byteUnits[i];
