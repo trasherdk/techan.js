@@ -3,76 +3,76 @@ const margin = { top: 20, right: 20, bottom: 60, left: 50 };
 const width = 960 - margin.left - margin.right;
 const height = 500 - margin.top - margin.bottom;
 
-var x = techan.scale.financetime()
+const x = techan.scale.financetime()
   .range([0, width]);
 
-var y = d3.scaleLinear()
+const y = d3.scaleLinear()
   .range([height, 0]);
 
-var yVolume = d3.scaleLinear()
+const yVolume = d3.scaleLinear()
   .range([y(0), y(0.2)]);
 
-var ohlc = techan.plot.ohlc()
+const ohlc = techan.plot.ohlc()
   .xScale(x)
   .yScale(y);
 
-var sma0 = techan.plot.sma()
+const sma0 = techan.plot.sma()
   .xScale(x)
   .yScale(y);
 
-var sma0Calculator = techan.indicator.sma()
+const sma0Calculator = techan.indicator.sma()
   .period(10);
 
-var sma1 = techan.plot.sma()
+const sma1 = techan.plot.sma()
   .xScale(x)
   .yScale(y);
 
-var sma1Calculator = techan.indicator.sma()
+const sma1Calculator = techan.indicator.sma()
   .period(20);
 
-var volume = techan.plot.volume()
+const volume = techan.plot.volume()
   .accessor(ohlc.accessor())   // Set the accessor to a ohlc accessor so we get highlighted bars
   .xScale(x)
   .yScale(yVolume);
 
-var xAxis = d3.axisBottom(x);
+const xAxis = d3.axisBottom(x);
 xAxis.tickFormat(d3.timeFormat('%e %b %H:%M'));
 
-var yAxis = d3.axisLeft(y);
+const yAxis = d3.axisLeft(y);
 
-var volumeAxis = d3.axisRight(yVolume)
+const volumeAxis = d3.axisRight(yVolume)
   .ticks(3)
   .tickFormat(d3.format(",.3s"));
 
-var timeAnnotation = techan.plot.axisannotation()
+const timeAnnotation = techan.plot.axisannotation()
   .axis(xAxis)
   .orient('bottom')
   .format(d3.timeFormat('%Y-%m-%d %X'))
   .width(65)
   .translate([0, height]);
 
-var ohlcAnnotation = techan.plot.axisannotation()
+const ohlcAnnotation = techan.plot.axisannotation()
   .axis(yAxis)
   .orient('left')
   .format(d3.format(',.2f'));
 
-var volumeAnnotation = techan.plot.axisannotation()
+const volumeAnnotation = techan.plot.axisannotation()
   .axis(volumeAxis)
   .orient('right')
   .width(35);
 
-var crosshair = techan.plot.crosshair()
+const crosshair = techan.plot.crosshair()
   .xScale(x)
   .yScale(y)
   .xAnnotation(timeAnnotation)
   .yAnnotation([ohlcAnnotation, volumeAnnotation])
   .on("move", move);
 
-var svg = d3.select(".chart").append("svg")
+let svg = d3.select(".chart").append("svg")
   .attr("width", width + margin.left + margin.right)
   .attr("height", height + margin.top + margin.bottom);
 
-var defs = svg.append("defs");
+const defs = svg.append("defs");
 
 defs.append("clipPath")
   .attr("id", "ohlcClip")
@@ -83,9 +83,9 @@ defs.append("clipPath")
   .attr("height", height);
 
 svg = svg.append("g")
-  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  .attr("transform", `translate(${margin.left},${margin.top})`);
 
-var ohlcSelection = svg.append("g")
+const ohlcSelection = svg.append("g")
   .attr("class", "ohlc")
   .attr("transform", "translate(0,0)");
 
@@ -107,7 +107,7 @@ ohlcSelection.append("g")
 
 svg.append("g")
   .attr("class", "x axis")
-  .attr("transform", "translate(0," + height + ")");
+  .attr("transform", `translate(0,${height})`);
 
 svg.append("g")
   .attr("class", "y axis")
@@ -124,14 +124,14 @@ svg.append("g")
 svg.append('g')
   .attr("class", "crosshair ohlc");
 
-var coordsText = svg.append('text')
+const coordsText = svg.append('text')
   .style("text-anchor", "end")
   .attr("class", "coords")
   .attr("x", width - 5)
   .attr("y", 15);
 
-var feed = [];
-var seed = {
+const feed = [];
+let seed = {
   date: new Date(Date.now()),
   open: 65.5,
   high: 67.2,
@@ -145,7 +145,7 @@ feed.push(seed);
 /**
  * Add 24 hours of 5 minutes interval
  */
-for (var i = 0; i < 288; i++) {
+for (let i = 0; i < 288; i++) {
   seed = randomOHLC(seed, 5 * 60 * 1000);
   feed.push(seed);
 }
@@ -153,7 +153,7 @@ for (var i = 0; i < 288; i++) {
 redraw(feed);
 
 function redraw (data) {
-  var accessor = ohlc.accessor();
+  const accessor = ohlc.accessor();
 
   x.domain(data.map(accessor.d));
   // Show only 150 points on the plot
@@ -167,7 +167,7 @@ function redraw (data) {
   svg
     //          .transition() // Disable transition for now, each is only for transitions
     .each(function () {
-      var selection = d3.select(this);
+      const selection = d3.select(this);
       selection.select('g.x.axis').call(xAxis);
       selection.select('g.y.axis').call(yAxis);
       selection.select("g.volume.axis").call(volumeAxis);
@@ -181,9 +181,9 @@ function redraw (data) {
     });
 
   // Set next timer expiry
-  setTimeout(function () {
-    var newData;
-    var next = randomOHLC(data[data.length - 1], 5 * 60 * 1000);
+  setTimeout(() => {
+    let newData;
+    const next = randomOHLC(data[data.length - 1], 5 * 60 * 1000);
     // Simulate intra day updates when no feed is left
     //var last = data[data.length - 1];
     // Last must be between high and low
@@ -198,6 +198,6 @@ function redraw (data) {
 
 function move (coords) {
   coordsText.text(
-    timeAnnotation.format()(coords.x) + ", " + ohlcAnnotation.format()(coords.y)
+    `${timeAnnotation.format()(coords.x)}, ${ohlcAnnotation.format()(coords.y)}`
   );
 }
