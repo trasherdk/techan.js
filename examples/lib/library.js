@@ -120,3 +120,31 @@ function getReadableHashRateString (hashrate) {
 	}
 	return hashrate.toFixed(2) + byteUnits[i]
 }
+
+function getRandom (min, max) {
+	return Math.round((Math.random() * (max - min) + min) * 100) / 100;
+}
+
+function getRandomInt (min, max) {
+	return Math.round(Math.random() * (max - min) + min + 1);
+}
+
+function randomOHLC (last, increment) { // increment 24H (86400 * 1000)
+	const next = {};
+
+	next.date = new Date(last.date.getTime() + increment);
+	next.open = last.close;
+
+	let min = last.close - (last.close * 0.02);
+	const max = last.close + (last.close * 0.02);
+	min = (min < 0 ? 0.0001 : min);
+	const v1 = getRandom(min, max);
+	const v2 = getRandom(min, max);
+	next.high = (v1 > v2) ? v1 : v2;
+	next.high = (next.high > next.open) ? next.high : next.open;
+	next.low = (v1 < v2) ? v1 : v2;
+	next.low = (next.low < next.open) ? next.low : next.open;
+	next.close = getRandom(next.low, next.high);
+	next.volume = getRandomInt(last.volume - (last.volume * 0.25), last.volume + (last.volume * 0.25));
+	return next;
+}
