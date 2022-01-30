@@ -30,11 +30,20 @@ const defparam = {
 		limit: 180 // (6 * 30)
 	}
 }
-/* Maybe wrong location for this
-const margin = { top: 20, right: 50, bottom: 30, left: 80 }
-const width = 600 - margin.left - margin.right
-const height = 400 - margin.top - margin.bottom
-*/
+/* Maybe wrong location for this */
+const dimension = () => {
+	const margin = { top: 20, right: 50, bottom: 30, left: 80 }
+	const width = 600 - margin.left - margin.right
+	const height = 400 - margin.top - margin.bottom
+
+	return {
+		margin,
+		width,
+		height
+	}
+}
+console.log('Dimension:', dimension())
+/* */
 const _ = (id) => document.getElementById(id)
 
 function getResolution (prmstr) {

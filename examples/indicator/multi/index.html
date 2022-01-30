@@ -6,7 +6,7 @@
 		<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 		<meta http-equiv="Pragma" content="no-cache" />
 		<meta http-equiv="Expires" content="0" />
-    <link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16"> 
+		<link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16">
 
 		<script src="https://d3js.org/d3.v4.js"></script>
 		<script src="/lib/techan.min.js"></script>
@@ -28,7 +28,7 @@
 		<script>
 
 			let params = getSearchParameters();
-			
+
 			params.crypto = (params.crypto ? params.crypto : "XMR,BTC");
 			params.currency = (params.currency ? params.currency : "EUR");
 			params.res = (params.res ? params.res : "minute");
@@ -37,8 +37,9 @@
 			document.title = "Multi: " + params.crypto + "-" + params.currency;
 
 			const divisor = Math.floor(window.innerWidth / 500);
+			const dim = dimension()
 			params.crypto.split(',').map(function (ticker) {
-				chart(`chart-${ticker}`, ticker, params.currency, (window.innerWidth - (margin.left + margin.right)) / divisor, 400);
+				chart(`chart-${ticker}`, ticker, params.currency, (window.innerWidth - (dim.margin.left + dim.margin.right)) / divisor, 400);
 			});
 
 		</script>

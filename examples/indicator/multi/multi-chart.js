@@ -1,9 +1,9 @@
 
-async function chart(name, symbol, currency, fullWidth, fullHeight) {
-  let margin = { top: 50, right: 75, bottom: 50, left: 75 }
-  let width = Math.floor(fullWidth - margin.left - margin.right)
-  let height = Math.floor(fullHeight - margin.top - margin.bottom)
-  let volumeHeight = fullHeight * 0.25
+async function chart (name, symbol, currency, fullWidth, fullHeight) {
+  const margin = dim.margin || { top: 50, right: 75, bottom: 50, left: 75 }
+  const width = Math.floor(fullWidth - margin.left - margin.right)
+  const height = Math.floor(fullHeight - margin.top - margin.bottom)
+  const volumeHeight = fullHeight * 0.25
 
   //  let parseDate = d3.timeParse("%d-%b-%y");
   //  let parseDate = d3.timeParse("%h:%m");
@@ -200,13 +200,13 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     draw();
   });
 
-  function reset() {
+  function reset () {
     zoom.scale(1);
     zoom.translate([0, 0]);
     draw();
   }
 
-  function zoomed() {
+  function zoomed () {
     x.zoomable().domain(d3.event.transform.rescaleX(zoomableInit).domain());
     y.domain(d3.event.transform.rescaleY(yInit).domain());
     yPercent.domain(d3.event.transform.rescaleY(yPercentInit).domain());
@@ -214,7 +214,7 @@ async function chart(name, symbol, currency, fullWidth, fullHeight) {
     draw();
   }
 
-  function draw() {
+  function draw () {
     svg.select("g.x.axis").call(xAxis);
     svg.select("g.y.axis").call(yAxis);
     svg.select("g.volume.axis").call(volumeAxis);
