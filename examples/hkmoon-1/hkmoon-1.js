@@ -197,10 +197,10 @@ function drawChart () {
   defs.selectAll('indicatorClip').data([0, 1])
     .enter()
     .append('clipPath')
-    .attr('id', function (d, i) { return `indicatorClip-${i}` })
+    .attr('id', (d, i) => `indicatorClip-${i}`)
     .append('rect')
     .attr('x', 0)
-    .attr('y', function (d, i) { return indicatorTop(i) })
+    .attr('y', (d, i) => indicatorTop(i))
     .attr('width', dim.plot.width)
     .attr('height', dim.indicator.height)
 
@@ -214,7 +214,7 @@ function drawChart () {
 
   svg.append('g')
     .attr('class', 'x axis')
-    .attr('transform', 'translate(0,' + dim.plot.height + ')')
+    .attr('transform', `translate(0,${dim.plot.height})`)
 
   const ohlcSelection = svg.append('g')
     .attr('class', 'ohlc')
@@ -222,7 +222,7 @@ function drawChart () {
 
   ohlcSelection.append('g')
     .attr('class', 'axis')
-    .attr('transform', 'translate(' + x(1) + ',0)')
+    .attr('transform', `translate(${x(1)},0)`)
     .append('text')
     .attr('transform', 'rotate(-90)')
     .attr('y', -12)
@@ -261,19 +261,19 @@ function drawChart () {
 
   const indicatorSelection = svg.selectAll('svg > g.indicator').data(['macd', 'rsi']).enter()
     .append('g')
-    .attr('class', function (d) { return d + ' indicator' })
+    .attr('class', (d) => `${d} indicator`)
 
   indicatorSelection.append('g')
     .attr('class', 'axis right')
-    .attr('transform', 'translate(' + x(1) + ',0)')
+    .attr('transform', `translate(${x(1)},0)`)
 
   indicatorSelection.append('g')
     .attr('class', 'axis left')
-    .attr('transform', 'translate(' + x(0) + ',0)')
+    .attr('transform', `translate(${x(0)},0)`)
 
   indicatorSelection.append('g')
     .attr('class', 'indicator-plot')
-    .attr('clip-path', function (d, i) { return 'url(#indicatorClip-' + i + ')' })
+    .attr('clip-path', (d, i) => `url(#indicatorClip-${i})`)
 
   // Add trendlines and other interactions last to be above zoom pane
   svg.append('g')
@@ -298,9 +298,9 @@ function drawChart () {
 
   d3.select('button').on('click', reset)
 
-  const url = 'https://gist.githubusercontent.com/andredumas/27c4a333b0e0813e093d/raw/ca6191ee1820b61dc7722d217ea59a2ee4a9a57c/data.csv'
+  // const url = 'https://gist.githubusercontent.com/andredumas/27c4a333b0e0813e093d/raw/ca6191ee1820b61dc7722d217ea59a2ee4a9a57c/data.csv'
 
-  d3.csv(url)
+  d3.csv('data.csv')
     .then(data => {
       const accessor = candlestick.accessor()
       const indicatorPreRoll = 33 // Don't show where indicators don't have data

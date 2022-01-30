@@ -1,3 +1,10 @@
+.credit, .chart {
+	display: grid;
+	align-content: center;
+	max-width: fit-content;
+	margin: 1rem auto;
+}
+
 text.symbol {
   fill: #BBBBBB;
 }
