@@ -299,20 +299,22 @@ function drawChart () {
 
   d3.select("button").on("click", reset);
 
-  d3.csv("https://gist.githubusercontent.com/andredumas/27c4a333b0e0813e093d/raw/ca6191ee1820b61dc7722d217ea59a2ee4a9a57c/data.csv", function (error, data) {
-    const accessor = candlestick.accessor(),
-      indicatorPreRoll = 33;  // Don't show where indicators don't have data
+  d3.csv("https://gist.githubusercontent.com/andredumas/27c4a333b0e0813e093d/raw/ca6191ee1820b61dc7722d217ea59a2ee4a9a57c/data.csv", (error, data) => {
+    if (error) {
+      console.error('d3.csv()', error)
+      return
+    }
+    const accessor = candlestick.accessor();
+    const indicatorPreRoll = 33;  // Don't show where indicators don't have data
 
-    data = data.map(function (d) {
-      return {
-        date: parseDate(d.Date),
-        open: +d.Open,
-        high: +d.High,
-        low: +d.Low,
-        close: +d.Close,
-        volume: +d.Volume
-      };
-    }).sort(function (a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
+    data = data.map((d) => ({
+      date: parseDate(d.Date),
+      open: +d.Open,
+      high: +d.High,
+      low: +d.Low,
+      close: +d.Close,
+      volume: +d.Volume
+    })).sort((a, b) => d3.ascending(accessor.d(a), accessor.d(b)));
 
     x.domain(techan.scale.plot.time(data).domain());
     y.domain(techan.scale.plot.ohlc(data.slice(indicatorPreRoll)).domain());
