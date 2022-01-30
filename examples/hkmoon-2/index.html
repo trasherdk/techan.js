@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16">
+
+    <!--script src="https://d3js.org/d3.v4.js"></script-->
+    <script src="/lib/d3/d3.min.js"></script>
+    <script src="/lib/techan.min.js"></script>
+
+    <link href="styles.css" rel="stylesheet">
+    <script src="hkmoon-2.js"></script>
+    <style>
+
+    </style>
+  </head>
+
+  <body>
+    <div id="chart" class="chart"></div>
+    <div class="credit">
+      <a href="https://gist.github.com/hkmoon/ac296af2147288fd8f0f11a29040fa83">Example #2 from: techan.js in jupyter notebook</a>
+    </div>
+    <script>
+      window.addEventListener('DOMContentLoaded', (event) => {
+        console.log('DOM fully loaded and parsed');
+        drawChart()
+      });
+    </script>
+  </body>
+
+</html>
