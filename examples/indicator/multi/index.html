@@ -26,20 +26,23 @@
 		<div class="footer"></div>
 
 		<script>
+			let params
+			window.addEventListener('DOMContentLoaded', (event) => {
+				console.log('DOM fully loaded and parsed');
+				params = getSearchParameters();
 
-			let params = getSearchParameters();
+				params.crypto = (params.crypto ? params.crypto : "XMR,BTC");
+				params.currency = (params.currency ? params.currency : "EUR");
+				params.res = (params.res ? params.res : "minute");
+				params.agg = (params.agg ? params.agg : 1);
+				console.log("Parameters", params);
+				document.title = "Multi: " + params.crypto + "-" + params.currency;
 
-			params.crypto = (params.crypto ? params.crypto : "XMR,BTC");
-			params.currency = (params.currency ? params.currency : "EUR");
-			params.res = (params.res ? params.res : "minute");
-			params.agg = (params.agg ? params.agg : 1);
-			console.log("Parameters", params);
-			document.title = "Multi: " + params.crypto + "-" + params.currency;
-
-			const divisor = Math.floor(window.innerWidth / 500);
-			const dim = dimension()
-			params.crypto.split(',').map(function (ticker) {
-				chart(`chart-${ticker}`, ticker, params.currency, (window.innerWidth - (dim.margin.left + dim.margin.right)) / divisor, 400);
+				const divisor = Math.floor(window.innerWidth / 500);
+				const dim = dimension()
+				params.crypto.split(',').map(function (ticker) {
+					chart(`chart-${ticker}`, ticker, params.currency, (window.innerWidth - (dim.margin.left + dim.margin.right)) / divisor, 400);
+				});
 			});
 
 		</script>
