@@ -300,7 +300,7 @@ const drawChart = async () => {
 
   let data
   try {
-    const url = 'https://gist.githubusercontent.com/andredumas/27c4a333b0e0813e093d/raw/ca6191ee1820b61dc7722d217ea59a2ee4a9a57c/data.csv'
+    // const url = 'https://gist.githubusercontent.com/andredumas/27c4a333b0e0813e093d/raw/ca6191ee1820b61dc7722d217ea59a2ee4a9a57c/data.csv'
     data = await d3.csv('data.csv')
   } catch (error) {
     console.error('d3.csv()', error)
