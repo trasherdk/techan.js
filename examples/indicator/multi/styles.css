@@ -39,8 +39,8 @@ body {
   border: 1px solid darkgray;
 }
 .footer {
-	/* position: absolute;
-	bottom: 0; */
+	position: sticky;
+	bottom: 0;
 	background-color: #1387b5;
 	/* margin-top: 14px; */
 	min-height: 3rem;
