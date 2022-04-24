@@ -32,7 +32,7 @@ const defparam = {
 }
 /* Maybe wrong location for this */
 const dimension = () => {
-	const margin = { top: 20, right: 50, bottom: 30, left: 80 }
+	const margin = { top: 20, right: 60, bottom: 30, left: 60 }
 	const width = 600 - margin.left - margin.right
 	const height = 400 - margin.top - margin.bottom
 
