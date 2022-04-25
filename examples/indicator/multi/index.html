@@ -8,7 +8,8 @@
 		<meta http-equiv="Expires" content="0" />
 		<link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16">
 
-		<script src="https://d3js.org/d3.v4.js"></script>
+		<!--script src="https://d3js.org/d3.v4.js"></script-->
+		<script src="/lib/d3/v5/d3.js"></script>
 		<script src="/lib/techan.min.js"></script>
 		<script src="/lib/library.js"></script>
 
@@ -41,7 +42,17 @@
 				const divisor = Math.floor(window.innerWidth / 500);
 				const dim = dimension()
 				params.crypto.split(',').map(function (ticker) {
-					chart(`chart-${ticker}`, ticker, params.currency, (window.innerWidth - (dim.margin.left + dim.margin.right)) / divisor, 400);
+					try {
+						chart(`chart-${ticker}`, ticker, params.currency, (window.innerWidth - (dim.margin.left + dim.margin.right)) / divisor, 350);
+					} catch (error) {
+						console.log('index.html - try => catch', error)
+						let target = document.getElementById(`chart-${ticker}`)
+						let div = document.createElement('div')
+						let h2 = document.createElement('h2')
+						h2.innerText = error
+						div.appendChild(h2)
+						target.appendChild(div)
+					}
 				});
 			});
 
