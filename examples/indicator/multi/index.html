@@ -43,15 +43,12 @@
 				const dim = dimension()
 				params.crypto.split(',').map(function (ticker) {
 					try {
-						chart(`chart-${ticker}`, ticker, params.currency, (window.innerWidth - (dim.margin.left + dim.margin.right)) / divisor, 350);
+						chart(`chart-${ticker}`, ticker, params.currency, (window.innerWidth - (dim.margin.left + dim.margin.right)) / divisor, 350)
+							.catch(error => {
+								console.log('chart().catch', error.message)
+							});
 					} catch (error) {
 						console.log('index.html - try => catch', error)
-						let target = document.getElementById(`chart-${ticker}`)
-						let div = document.createElement('div')
-						let h2 = document.createElement('h2')
-						h2.innerText = error
-						div.appendChild(h2)
-						target.appendChild(div)
 					}
 				});
 			});

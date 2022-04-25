@@ -24,7 +24,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     TimeFormat = d3.timeFormat("%c");
     console.log(TimeFormat(new Date)); // mandag den 15 februar 2021 12:03:41
   }).catch(error => {
-    throw error;
+    throw error.message;
   });
 
   let zoom = d3.zoom()
@@ -163,18 +163,34 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   str += `&aggregate=${params.agg ? params.agg : defparam.aggregate}`;
   console.log(str);
 
-  let data = await d3.json(defparam.dataurl + str)
-    .then(response => {
+  let data = []
 
-      if (response.Response === 'Error') {
-        console.log(response)
-        throw new Error(response.Message)
-      }
+  try {
+    data = await d3.json(defparam.dataurl + str)
+      .then(response => {
 
-      return response.Data
-    }).catch(error => {
-      console.log('d3 catch', error)
-    })
+        if (response.Response === 'Error') {
+          console.log('d3 response', response)
+          throw new Error(response.Message)
+        }
+
+        return response.Data || []
+      }).catch(error => {
+        console.log('d3 catch', error.message)
+        throw Error(error.message)
+      })
+  } catch (error) {
+    console.log('d3 - try => catch', error.message)
+
+    svg.append('text')
+      .attr("class", "symbol")
+      .attr("x", 5)
+      .attr('y', '50%')
+      .text(`${error.message}`);
+
+    throw new Error(error.message)
+    // return error.message
+  }
 
   let accessor = candlestick.accessor();
   let indicatorPreRoll = params.res === 'minute' ? 15 : 6;  // Don't show where indicators don't have data
@@ -221,16 +237,21 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   }
 
   function draw () {
-    svg.select("g.x.axis").call(xAxis);
-    svg.select("g.y.axis").call(yAxis);
-    svg.select("g.volume.axis").call(volumeAxis);
-    svg.select("g.percent.axis").call(percentAxis);
+    try {
+      svg.select("g.x.axis").call(xAxis);
+      svg.select("g.y.axis").call(yAxis);
+      svg.select("g.volume.axis").call(volumeAxis);
+      svg.select("g.percent.axis").call(percentAxis);
 
-    // We know the data does not change, a simple refresh that does not perform data joins will suffice.
-    svg.select("g.candlestick").call(candlestick.refresh);
-    svg.select("g.volume").call(volume.refresh);
-    svg.select("g.sma.ma-0").call(sma0.refresh);
-    svg.select("g.sma.ma-1").call(sma1.refresh);
-    svg.select("g.ema.ma-2").call(ema2.refresh);
+      // We know the data does not change, a simple refresh that does not perform data joins will suffice.
+      svg.select("g.candlestick").call(candlestick.refresh);
+      svg.select("g.volume").call(volume.refresh);
+      svg.select("g.sma.ma-0").call(sma0.refresh);
+      svg.select("g.sma.ma-1").call(sma1.refresh);
+      svg.select("g.ema.ma-2").call(ema2.refresh);
+    } catch (error) {
+      console.log('draw() try => catch', error.message)
+      return false
+    }
   }
 }
