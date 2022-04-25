@@ -1,5 +1,6 @@
 
 async function chart (name, symbol, currency, fullWidth, fullHeight) {
+  const dim = dimension()
   const margin = dim.margin || { top: 50, right: 75, bottom: 50, left: 75 }
   const width = Math.floor(fullWidth - margin.left - margin.right)
   const height = Math.floor(fullHeight - margin.top - margin.bottom)
@@ -12,19 +13,18 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   const chart = document.createElement("chart");
   chart.setAttribute("id", name);
   chart.setAttribute("class", "chart");
-  chart.style.maxWidth = Math.floor(fullWidth)
-  chart.style.maxHeight = fullHeight
+  chart.style.maxWidth = `${Math.floor(fullWidth)}px`
+  chart.style.maxHeight = `${fullHeight}px`
   //chart.setAttribute("style",`max-height: ${fullHeight}`);
   root.appendChild(chart);
   let TimeFormat;
-  await d3.json("https://cdn.jsdelivr.net/npm/d3-time-format@3/locale/da-DK.json", function (error, locale) {
-    if (error) throw error;
+  await d3.json("https://cdn.jsdelivr.net/npm/d3-time-format@3/locale/da-DK.json").then(locale => {
 
     d3.timeFormatDefaultLocale(locale);
-
     TimeFormat = d3.timeFormat("%c");
-
     console.log(TimeFormat(new Date)); // mandag den 15 februar 2021 12:03:41
+  }).catch(error => {
+    throw error;
   });
 
   let zoom = d3.zoom()
@@ -104,7 +104,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
   svg.append("clipPath")
     .attr("id", "clip")
@@ -117,7 +117,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   svg.append('text')
     .attr("class", "symbol")
     .attr("x", 5)
-    .text(symbol + " (" + currency + ")");
+    .text(`${symbol} (${currency})`);
 
   svg.append("g")
     .attr("class", "volume")
@@ -141,11 +141,11 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
   svg.append("g")
     .attr("class", "x axis")
-    .attr("transform", "translate(0," + height + ")");
+    .attr("transform", `translate(0,${height})`);
 
   svg.append("g")
     .attr("class", "y axis")
-    .attr("transform", "translate(" + width + ",0)");
+    .attr("transform", `translate(${width},0)`);
 
   svg.append("g")
     .attr("class", "percent axis");
@@ -159,46 +159,52 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     .attr("height", height)
     .call(zoom);
 
-  let str = defparam[params.res].url + "?fsym=" + symbol + "&tsym=" + currency + "&limit=" + (params.limit ? params.limit : defparam[params.res].limit);
-  str += "&aggregate=" + (params.agg ? params.agg : defparam.aggregate);
+  let str = `${defparam[params.res].url}?fsym=${symbol}&tsym=${currency}&limit=${params.limit ? params.limit : defparam[params.res].limit}`;
+  str += `&aggregate=${params.agg ? params.agg : defparam.aggregate}`;
   console.log(str);
 
-  await d3.json(defparam.dataurl + str, (error, data) => {
+  let data = await d3.json(defparam.dataurl + str)
+    .then(response => {
 
-    let accessor = candlestick.accessor(),
-      indicatorPreRoll = params.res === 'minute' ? 15 : 6;  // Don't show where indicators don't have data
+      if (response.Response === 'Error') {
+        console.log(response)
+        throw new Error(response.Message)
+      }
 
-    data = data.Data.map(function (d) {
-      return {
-        date: new Date(d.time * 1000),  // new Date(d.time * 1000),
-        volume: +d.volumeto,
-        open: +d.open,
-        high: +d.high,
-        low: +d.low,
-        close: +d.close
-      };
-    }).sort(function (a, b) {
-      return d3.ascending(accessor.d(a), accessor.d(b));
-    });
+      return response.Data
+    }).catch(error => {
+      console.log('d3 catch', error)
+    })
 
-    x.domain(techan.scale.plot.time(data, accessor).domain());
-    y.domain(techan.scale.plot.ohlc(data.slice(indicatorPreRoll), accessor).domain());
-    yPercent.domain(techan.scale.plot.percent(y, accessor(data[indicatorPreRoll])).domain());
-    yVolume.domain(techan.scale.plot.volume(data, accessor.v).domain());
+  let accessor = candlestick.accessor();
+  let indicatorPreRoll = params.res === 'minute' ? 15 : 6;  // Don't show where indicators don't have data
 
-    svg.select("g.candlestick").datum(data).call(candlestick);
-    svg.select("g.volume").datum(data).call(volume);
-    svg.select("g.sma.ma-0").datum(techan.indicator.sma().period(10)(data)).call(sma0); // 10
-    svg.select("g.sma.ma-1").datum(techan.indicator.sma().period(26)(data)).call(sma1); // 20
-    svg.select("g.ema.ma-2").datum(techan.indicator.ema().period(9)(data)).call(ema2); // 50
+  data = data.map((d) => ({
+    date: new Date(d.time * 1000),  // new Date(d.time * 1000),
+    volume: +d.volumeto,
+    open: +d.open,
+    high: +d.high,
+    low: +d.low,
+    close: +d.close
+  })).sort((a, b) => d3.ascending(accessor.d(a), accessor.d(b)));
+
+  x.domain(techan.scale.plot.time(data, accessor).domain());
+  y.domain(techan.scale.plot.ohlc(data.slice(indicatorPreRoll), accessor).domain());
+  yPercent.domain(techan.scale.plot.percent(y, accessor(data[indicatorPreRoll])).domain());
+  yVolume.domain(techan.scale.plot.volume(data, accessor.v).domain());
+
+  svg.select("g.candlestick").datum(data).call(candlestick);
+  svg.select("g.volume").datum(data).call(volume);
+  svg.select("g.sma.ma-0").datum(techan.indicator.sma().period(10)(data)).call(sma0); // 10
+  svg.select("g.sma.ma-1").datum(techan.indicator.sma().period(26)(data)).call(sma1); // 20
+  svg.select("g.ema.ma-2").datum(techan.indicator.ema().period(9)(data)).call(ema2); // 50
 
 
-    zoomableInit = x.zoomable().domain([indicatorPreRoll, data.length]).copy(); // Zoom in a little to hide indicator preroll
-    yInit = y.copy();
-    yPercentInit = yPercent.copy();
+  zoomableInit = x.zoomable().domain([indicatorPreRoll, data.length]).copy(); // Zoom in a little to hide indicator preroll
+  yInit = y.copy();
+  yPercentInit = yPercent.copy();
 
-    draw();
-  });
+  draw();
 
   function reset () {
     zoom.scale(1);
