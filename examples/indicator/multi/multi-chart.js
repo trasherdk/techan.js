@@ -86,7 +86,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
   format = d3.timeFormat("%H:%M"); // Force format :(
   let xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat(format))
-    .ticks(12);
+  //  .ticks(12);
   //                .ticks(4);
 
   let yAxis = d3.axisRight(y);
@@ -163,33 +163,55 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   str += `&aggregate=${params.agg ? params.agg : defparam.aggregate}`;
   console.log(str);
 
+  let retry = 3;
   let data = []
 
-  try {
-    data = await d3.json(defparam.dataurl + str)
-      .then(response => {
+  while (retry > 0) {
 
-        if (response.Response === 'Error') {
-          console.log('d3 response', response)
-          throw new Error(response.Message)
-        }
+    try {
+      data = await d3.json(defparam.dataurl + str)
+        .then(response => {
+          if (response.HasWarning) {
+            console.log('response.HasWarning: delay')
+            delay(0.2)
+            console.log('response.HasWarning: continue')
+          }
 
-        return response.Data || []
-      }).catch(error => {
-        console.log('d3 catch', error.message)
-        throw Error(error.message)
-      })
-  } catch (error) {
-    console.log('d3 - try => catch', error.message)
+          if (response.Response === 'Error') {
+            console.log('d3 response', response)
+            if (response.Message.startsWith('You are over your rate')) {
+              retry--;
+              console.log(`Retry ${symbol} [${retry}] after delay.`);
+              delay(0.2);
+              return;
+            }
 
-    svg.append('text')
-      .attr("class", "symbol")
-      .attr("x", 5)
-      .attr('y', '50%')
-      .text(`${error.message}`);
+            if (response.Message.includes('toSymbol')) {
+              response.Message = response.Message.replace('toSymbol', symbol);
+            }
 
-    throw new Error(error.message)
-    // return error.message
+            throw new Error(response.Message)
+          }
+
+          retry = 0;
+          return response.Data || []
+
+        }).catch(error => {
+          console.log('d3 catch', error.message)
+          throw Error(error.message)
+        })
+    } catch (error) {
+      console.log('d3 - try => catch', error.message)
+
+      svg.append('text')
+        .attr("class", "symbol")
+        .attr("x", 5)
+        .attr('y', '50%')
+        .text(`${error.message}`);
+
+      throw new Error(error.message)
+      // return error.message
+    }
   }
 
   let accessor = candlestick.accessor();

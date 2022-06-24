@@ -157,3 +157,12 @@ function randomOHLC (last, increment) { // increment 24H (86400 * 1000)
 	next.volume = getRandomInt(last.volume - (last.volume * 0.25), last.volume + (last.volume * 0.25));
 	return next;
 }
+
+const delay = async (second) => {
+	var delaytime = second * 1000
+	const promise = new Promise((resolve, reject) => {
+		setTimeout(() => resolve('done'), delaytime)
+	})
+
+	return await promise
+}
