@@ -11,3 +11,4 @@ test/html/gist
 npm-debug.log
 package-lock.json
 techanjs.conf
+*.crt
