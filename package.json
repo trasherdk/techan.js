@@ -22,7 +22,7 @@
   "main": "dist/techan.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/andredumas/techan.js.git"
+    "url": "https://github.com/trasherdk/techan.js.git"
   },
   "license": "MIT",
   "scripts": {
