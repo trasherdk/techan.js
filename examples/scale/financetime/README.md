@@ -1,0 +1,2 @@
+<p>Demonstrating the difference between zooming techan time scale, clamped and non clamped zooming and d3 time scale for both daily and intraday data. D3's time scale is continuous and linear, <code>techan.scale.financetime</code> plots only points available in the data's date domain without linear (weekend, market holiday) gaps.</p>
+<p><strong>Note:</strong> <code>techan.scale.financetime</code> only plots the available domain, unlike d3, and will not scale or translate to values outside of the domain.</p>

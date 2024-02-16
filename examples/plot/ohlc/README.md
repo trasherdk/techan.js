@@ -1,0 +1,1 @@
+Open High Low Close (ohlc) rendering demo. Demonstrates ohlc rendering and up and down day coloring.

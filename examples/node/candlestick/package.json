@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "techan": "~0.7.0",
+    "jsdom": "~3.1.2"
+  }
+}

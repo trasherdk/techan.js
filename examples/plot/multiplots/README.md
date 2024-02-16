@@ -1,0 +1,1 @@
+Demonstrating multiple independently rendered, small sized charts.

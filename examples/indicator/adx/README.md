@@ -1,0 +1,1 @@
+Average Directional Index (ADX) calculation and rendering demo.

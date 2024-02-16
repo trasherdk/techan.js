@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+    path.arrow {
+        stroke: none;
+        fille: #000000;
+    }
+
+    path.up {
+        fill: #008800;
+    }
+
+    path.down {
+        fill: #FF0000;
+    }
+
+</style>
+<body>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script src="http://techanjs.org/techan.min.js"></script>
+<script>
+
+    var margin = {top: 20, right: 20, bottom: 30, left: 50},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+    var data = ["up", "right", "down", "left"];
+
+    var arrow = techan.svg.arrow()
+            .x(300)
+            .y(100)
+            .height(50)
+            .width(50);
+
+    var arrowOrient = techan.svg.arrow()
+            .orient(function(d) { return d; })
+            .x(function(d, i) { return 100+i*50; })
+            .y(function(d, i) { return 100+i*50; });
+
+    var arrowTranslate = techan.svg.arrow()
+            .tail(false);
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    svg.append("path").attr("class", "arrow").attr("d", arrow);
+
+    svg.selectAll("path.arrow.orient").data(data).enter()
+            .append("path")
+            .attr("class", function(d) { return "arrow orient " + d; })
+            .attr("d", arrowOrient);
+
+    svg.selectAll("path.arrow.rotate").data(data).enter()
+            .append("path")
+            .attr("class", function(d) { return "arrow rotate " + d; })
+            .attr("transform", function(d, i) {
+                return "translate(" + (100+i*50) + ", " + (150+i*50) + ") rotate(" + i*45 + ")";
+            })
+            .attr("d", arrowTranslate);
+
+</script>

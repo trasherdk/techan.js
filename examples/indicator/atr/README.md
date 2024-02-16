@@ -1,0 +1,1 @@
+Average True Range (ATR) calculation and rendering demo.

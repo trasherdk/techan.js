@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+    body {
+        font: 10px sans-serif;
+    }
+
+    text {
+        fill: #000;
+    }
+
+    button {
+        position: absolute;
+        right: 20px;
+        top: 440px;
+        display: none;
+    }
+
+    path.candle {
+        stroke: #000000;
+    }
+
+    path.candle.body {
+        stroke-width: 0;
+    }
+
+    path.candle.up {
+        fill: #00AA00;
+        stroke: #00AA00;
+    }
+
+    path.candle.down {
+        fill: #FF0000;
+        stroke: #FF0000;
+    }
+
+    .supstance path {
+        stroke: blue;
+        stroke-width: 0.8;
+        stroke-dasharray: 2, 2;
+    }
+
+    .mouseover .supstance path {
+        stroke-width: 1.5;
+    }
+
+    .axisannotation path {
+        fill: blue;
+    }
+
+    .axisannotation text {
+        fill: #fff;
+    }
+
+    .dragging .supstance path {
+        stroke: darkblue;
+    }
+
+    .interaction path {
+        pointer-events: all;
+        cursor: ns-resize;
+        stroke: blue;
+        stroke-width: 1;
+    }
+
+</style>
+<body>
+<button>Update</button>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script src="http://techanjs.org/techan.min.js"></script>
+<script>
+
+    var margin = {top: 20, right: 20, bottom: 30, left: 50},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+    var parseDate = d3.timeParse("%d-%b-%y"),
+        valueFormat = d3.format(',.2f');
+
+    var x = techan.scale.financetime()
+            .range([0, width]);
+
+    var y = d3.scaleLinear()
+            .range([height, 0]);
+
+    var percent = y.copy();
+
+    var candlestick = techan.plot.candlestick()
+            .xScale(x)
+            .yScale(y);
+
+    var xAxis = d3.axisBottom(x);
+
+    var yAxis = d3.axisLeft(y);
+
+    var percentAxis = d3.axisRight(percent);
+
+    var ohlcAnnotation = techan.plot.axisannotation()
+            .axis(yAxis)
+            .orient('left')
+            .format(d3.format(',.2f'));
+
+    var percentAnnotation = techan.plot.axisannotation()
+            .axis(percentAxis)
+            .orient('right')
+            .format(d3.format('+.1%'));
+
+    var supstance = techan.plot.supstance()
+            .xScale(x)
+            .yScale(y)
+            .annotation([ohlcAnnotation, percentAnnotation])
+            .on("mouseenter", enter)
+            .on("mouseout", out)
+            .on("drag", drag);
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom);
+
+    var defs = svg.append("defs");
+
+    defs.append("clipPath")
+            .attr("id", "ohlcClip")
+        .append("rect")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("width", width)
+            .attr("height", height);
+
+    defs.append("clipPath")
+            .attr("id", "supstanceClip")
+        .append("rect")
+            .attr("x", -margin.left)
+            .attr("y", 0)
+            .attr("width", width+margin.left)
+            .attr("height", height);
+
+    svg = svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var valueText = svg.append('text')
+            .style("text-anchor", "end")
+            .attr("class", "coords")
+            .attr("x", width - 5)
+            .attr("y", 15);
+
+    d3.csv("data.csv", function(error, data) {
+        var accessor = candlestick.accessor();
+
+        data = data.slice(0, 200).map(function(d) {
+            return {
+                date: parseDate(d.Date),
+                open: +d.Open,
+                high: +d.High,
+                low: +d.Low,
+                close: +d.Close,
+                volume: +d.Volume
+            };
+        }).sort(function(a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
+
+        var supstanceData = [
+            { value: 63.64 },
+            { start: new Date(2013, 11, 10), end: new Date(2014, 4, 12), value: 55.50 },
+            { start: new Date(2013, 8, 16), end: new Date(2013, 11, 24), value: 51.53 }
+        ];
+
+        svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")");
+
+        svg.append("g")
+                .attr("class", "y axis")
+            .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("Price ($)");
+
+        svg.append("g")
+                .attr("class", "candlestick");
+
+        svg.append("g")
+                .attr("class", "supstances")
+                .attr("clip-path", "url(#supstanceClip)");
+
+        // Data to display initially
+        draw(data.slice(0, data.length-20), supstanceData.slice(0, supstanceData.length-1));
+        // Only want this button to be active if the data has loaded
+        d3.select("button").on("click", function() { draw(data, supstanceData); }).style("display", "inline");
+    });
+
+    function draw(data, supstanceData) {
+        x.domain(data.map(candlestick.accessor().d));
+        y.domain(techan.scale.plot.ohlc(data, candlestick.accessor()).domain());
+        percent.domain(techan.scale.plot.percent(y, candlestick.accessor()(data[0])).domain());
+
+        svg.selectAll("g.candlestick").datum(data).call(candlestick);
+        svg.selectAll("g.x.axis").call(xAxis);
+        svg.selectAll("g.y.axis").call(yAxis);
+        svg.selectAll("g.supstances").datum(supstanceData).call(supstance).call(supstance.drag);
+    }
+
+    function enter(d) {
+        valueText.style("display", "inline");
+        refreshText(d);
+    }
+
+    function out() {
+        valueText.style("display", "none");
+    }
+
+    function drag(d) {
+        refreshText(d);
+    }
+
+    function refreshText(d) {
+        valueText.text("Value: " + valueFormat(d.value));
+    }
+
+</script>

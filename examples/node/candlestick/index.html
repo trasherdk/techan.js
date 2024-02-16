@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+    <link rel="stylesheet" href="chart.css" type="text/css" />
+<body>
+
+<!-- Demonstrate that we don't need any javascript dependencies loaded before rendering svg chart-->
+<object type="image/svg+xml" data="chart.svg">Your browser does not support SVG</object>
+
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script src="http://techanjs.org/techan.min.js"></script>
+<script src="chart.js"></script>
+<script>
+
+    d3.csv("data.csv", function(error, data) {
+        d3.select("body").call(chart(d3, techan, data));
+    });
+
+</script>

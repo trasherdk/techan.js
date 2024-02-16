@@ -1,0 +1,1 @@
+Demonstrating zooming of a plot and axis. Zoom clamp is off, the chart can be freely moved.

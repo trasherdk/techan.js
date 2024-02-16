@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+    body {
+        font: 10px sans-serif;
+    }
+
+    text {
+        fill: #000;
+    }
+
+    button {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        display: none;
+    }
+
+    path.tick {
+        stroke: LightBlue;
+        stroke-width: 1;
+    }
+
+    path.volume {
+        fill: #cccccc;
+    }
+
+    path.line {
+        fill: none;
+        stroke: #BF5FFF;
+        stroke-width: 1;
+    }
+
+    .extent {
+        stroke: #fff;
+        fill-opacity: .125;
+        shape-rendering: crispEdges;
+    }
+
+    .crosshair {
+        cursor: crosshair;
+    }
+
+    .crosshair path.wire {
+        stroke: red;
+        stroke-dasharray: 1, 1;
+    }
+
+    .crosshair .axisannotation path {
+        fill: orange;
+    }
+    
+</style>
+<body>
+<button>Update</button>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script src="http://techanjs.org/techan.min.js"></script>
+<script>
+    
+    var margin = {top: 20, right: 20, bottom: 100, left: 55},
+        margin2 = {top: 420, right: 20, bottom: 20, left: 55},
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom,
+        height2 = 500 - margin2.top - margin2.bottom;
+
+    var tickDateTimeParser = d3.timeParse("%Y-%m-%dT%H:%M:%S.%L");
+
+    var x = techan.scale.financetime()
+            .range([0, width]);
+
+    var x2 = techan.scale.financetime()
+            .range([0, width]);
+
+    var y = d3.scaleLinear()
+            .range([height, 0]);
+
+    var yVolume = d3.scaleLinear()
+            .range([y(0), y(0.3)]);
+
+    var y2 = d3.scaleLinear()
+            .range([height2, 0]);
+
+    var brush = d3.brushX()
+            .extent([[0, 0], [width, height2]])
+            .on("end", brushed);
+
+    var tick = techan.plot.tick()
+            .xScale(x)
+            .yScale(y);
+
+    // FIXME: change volume to spead chart
+    var volume = techan.plot.volume()
+            .xScale(x)
+            .yScale(yVolume);
+
+    // FIXME: change close to line chart
+    var close = techan.plot.close()
+            .xScale(x2)
+            .yScale(y2);
+
+    var xAxis = d3.axisBottom(x);
+
+    var xAxis2 = d3.axisBottom(x2);
+
+    var yAxis = d3.axisLeft(y);
+
+    var yAxis2 = d3.axisLeft(y2)
+            .ticks(0);
+
+    var tickAnnotation = techan.plot.axisannotation()
+            .axis(yAxis)
+            .orient('left')
+            .format(d3.format(',.6f'));
+
+    var timeAnnotation = techan.plot.axisannotation()
+            .axis(xAxis)
+            .orient('bottom')
+            .format(d3.timeFormat('%H:%M:%S.%L'))
+            .width(70)
+            .translate([0, height]);
+
+    var crosshair = techan.plot.crosshair()
+            .xScale(x)
+            .yScale(y)
+            .xAnnotation(timeAnnotation)
+            .yAnnotation(tickAnnotation);
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom);
+
+    var focus = svg.append("g")
+            .attr("class", "focus")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    focus.append("clipPath")
+            .attr("id", "clip")
+        .append("rect")
+            .attr("x", 0)
+            .attr("y", y(1))
+            .attr("width", width)
+            .attr("height", y(0) - y(1));
+
+    focus.append("g")
+            .attr("class", "spread")
+            .attr("clip-path", "url(#clip)");
+
+    focus.append("g")
+            .attr("class", "tick")
+            .attr("clip-path", "url(#clip)");
+
+    focus.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")");
+
+    focus.append("g")
+            .attr("class", "y axis")
+        .append("text")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("Price ($)");
+
+    focus.append('g')
+            .attr("class", "crosshair")
+            .call(crosshair);
+
+    var context = svg.append("g")
+            .attr("class", "context")
+            .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
+
+    context.append("g")
+            .attr("class", "close");
+
+    context.append("g")
+            .attr("class", "pane");
+
+    context.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height2 + ")");
+
+    context.append("g")
+            .attr("class", "y axis")
+            .call(yAxis2);
+
+    d3.json("data.json", function(error, json) {
+    	var accessor = tick.accessor();
+    	data = json.slice(0, 3500).map(function(d, index, array){
+    		return {
+    			date: tickDateTimeParser(d.time),
+    			high: +d.ask,
+    			low: +d.bid,
+    			spread: (d.ask - d.bid)/0.0001,
+    			volume: (d.ask - d.bid)/0.0001,
+    			open: +d.ask,
+    			close: +d.bid
+    		};
+    	});
+    	data.sort(function(a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
+
+    	x.domain(data.map(accessor.d));
+        x2.domain(x.domain());
+        y.domain(techan.scale.plot.ohlc(data, accessor).domain());
+        y2.domain(y.domain());
+        yVolume.domain(techan.scale.plot.volume(data).domain());
+
+        focus.select("g.tick").datum(data);
+        focus.select("g.spread").datum(data);
+
+        context.select("g.close").datum(data).call(close);
+        context.select("g.x.axis").call(xAxis2);
+
+        // Associate the brush with the scale and render the brush only AFTER a domain has been applied
+        context.select("g.pane").call(brush).selectAll("rect").attr("height", height2);
+
+        x.zoomable().domain(x2.zoomable().domain());
+        draw();
+    });
+
+    function brushed() {
+        var zoomable = x.zoomable(),
+            zoomable2 = x2.zoomable();
+
+        zoomable.domain(zoomable2.domain());
+        if(d3.event.selection !== null) zoomable.domain(d3.event.selection.map(zoomable.invert));
+        draw();
+    }
+
+    function draw() {
+        var tickSelection = focus.select("g.tick"),
+            data = tickSelection.datum();
+        y.domain(techan.scale.plot.ohlc(data.slice.apply(data, x.zoomable().domain()), tick.accessor()).domain());
+        tickSelection.call(tick);
+        focus.select("g.spread").call(volume);
+        focus.select("g.x.axis").call(xAxis);
+        focus.select("g.y.axis").call(yAxis);
+    }
+
+</script>

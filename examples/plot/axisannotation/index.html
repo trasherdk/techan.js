@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+    body {
+        font: 10px sans-serif;
+    }
+
+    button {
+        position: absolute;
+        right: 70px;
+        top: 440px;
+        display: none;
+    }
+
+    path.candle {
+        stroke: #000000;
+    }
+
+    path.candle.body {
+        stroke-width: 0;
+    }
+
+    path.candle.up {
+        fill: #00AA00;
+        stroke: #00AA00;
+    }
+
+    path.candle.down {
+        fill: #FF0000;
+        stroke: #FF0000;
+    }
+
+    .y.annotation.left path {
+        fill: #00AA00;
+    }
+
+    .y.annotation.right path {
+        fill: #FF0000;
+    }
+
+    .x.annotation path {
+        fill: #DDD80E;
+    }
+
+
+</style>
+<body>
+<button>Update</button>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script src="http://techanjs.org/techan.min.js"></script>
+<script>
+
+    var margin = {top: 20, right: 50, bottom: 30, left: 50},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+    var parseDate = d3.timeParse("%d-%b-%y");
+
+    var x = techan.scale.financetime()
+            .range([0, width]);
+
+    var y = d3.scaleLinear()
+            .range([height, 0]);
+
+    var candlestick = techan.plot.candlestick()
+            .xScale(x)
+            .yScale(y);
+
+    var xAxis = d3.axisBottom(x);
+
+    var xTopAxis = d3.axisTop(x);
+
+    var yAxis = d3.axisLeft(y);
+
+    var yRightAxis = d3.axisRight(y);
+
+    var ohlcAnnotation = techan.plot.axisannotation()
+            .axis(yAxis)
+            .orient('left')
+            .accessor(candlestick.accessor())
+            .format(d3.format(',.2f'));
+
+    var ohlcRightAnnotation = techan.plot.axisannotation()
+            .axis(yRightAxis)
+            .orient('right')
+            .accessor(candlestick.accessor())
+            .translate([width, 0]); // Translation can be optionally set here, or over the group
+
+    var timeAnnotation = techan.plot.axisannotation()
+            .axis(xAxis)
+            .orient('bottom')
+            .accessor(candlestick.accessor().d)
+            .format(d3.timeFormat('%Y-%m-%d'))
+            .width(65);
+
+    var timeTopAnnotation = techan.plot.axisannotation()
+            .accessor(candlestick.accessor().d)
+            .axis(xTopAxis)
+            .orient('top');
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv("data.csv", function(error, data) {
+        var accessor = candlestick.accessor();
+
+        data = data.slice(0, 200).map(function(d) {
+            return {
+                date: parseDate(d.Date),
+                open: +d.Open,
+                high: +d.High,
+                low: +d.Low,
+                close: +d.Close,
+                volume: +d.Volume
+            };
+        }).sort(function(a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
+
+        svg.append("g")
+                .attr("class", "candlestick");
+
+        svg.append("g")
+                .attr("class", "x axis top");
+
+        svg.append("g")
+                .attr("class", "x axis bottom")
+                .attr("transform", "translate(0," + height + ")");
+
+        svg.append("g")
+                .attr("class", "y axis left");
+
+        svg.append("g")
+                .attr("class", "y axis right")
+                .attr("transform", "translate(" + width + ",0)");
+
+        svg.append("g")
+                .attr("class", "y annotation left");
+
+        svg.append("g")
+                .attr("class", "x annotation bottom")
+                .attr("transform", "translate(0," + height + ")");
+
+        svg.append("g")
+                .attr("class", "y annotation right");
+
+        svg.append("g")
+                .attr("class", "x annotation top");
+
+        // Data to display initially
+        draw(data.slice(0, data.length-20),
+                [data[80]],
+                [data[130], data[0]],
+                [data[80]],
+                [data[30]]
+        );
+        // Only want this button to be active if the data has loaded
+        d3.select("button").style("display", "inline").on("click",
+                function() {
+                    draw(data,
+                        [data[80]],
+                        [data[131], data[100]],
+                        [data[188], data[80]],
+                        [data[30], data[100]]);
+        });
+    });
+
+    function draw(data, topData, leftData, rightData, bottomData) {
+        x.domain(data.map(candlestick.accessor().d));
+        y.domain(techan.scale.plot.ohlc(data, candlestick.accessor()).domain());
+
+        svg.selectAll("g.candlestick").datum(data).call(candlestick);
+        svg.selectAll("g.x.axis.bottom").call(xAxis);
+        svg.selectAll("g.x.axis.top").call(xTopAxis);
+        svg.selectAll("g.y.axis.left").call(yAxis);
+        svg.selectAll("g.y.axis.right").call(yRightAxis);
+
+        svg.selectAll("g.x.annotation.top").datum(topData).call(timeTopAnnotation);
+        svg.selectAll("g.y.annotation.left").datum(leftData).call(ohlcAnnotation);
+        svg.selectAll("g.y.annotation.right").datum(rightData).call(ohlcRightAnnotation);
+        svg.selectAll("g.x.annotation.bottom").datum(bottomData).call(timeAnnotation);
+    }
+
+</script>

@@ -1,0 +1,12 @@
+.grunt
+.idea
+.project
+.vagrant
+*.iml
+bower_components
+build
+dist/*.zip
+node_modules
+test/html/gist
+npm-debug.log
+package-lock.json

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+    body {
+        font: 10px sans-serif;
+    }
+
+    text {
+        fill: #000;
+    }
+
+    button {
+        position: absolute;
+        right: 20px;
+        top: 440px;
+        display: none;
+    }
+
+    .sroc path {
+        fill: none;
+        stroke-width: 1;
+        stroke: #0000AA;
+    }
+
+    .sroc path.zero {
+      stroke: #BBBBBB;
+      stroke-dasharray: 0;
+      stroke-opacity: 0.5;
+    }
+
+</style>
+<body>
+<button>Update</button>
+<script src="http://d3js.org/d3.v4.min.js"></script>
+<script src="http://techanjs.org/techan.min.js"></script>
+<script>
+
+    var margin = {top: 20, right: 20, bottom: 30, left: 50},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+    var parseDate = d3.timeParse("%d-%b-%y");
+
+    var x = techan.scale.financetime()
+            .range([0, width]);
+
+    var y = d3.scaleLinear()
+            .range([height, 0]);
+
+    var sroc = techan.plot.sroc()
+            .xScale(x)
+            .yScale(y);
+
+    var xAxis = d3.axisBottom(x);
+
+    var yAxis = d3.axisLeft(y)
+            .tickFormat(d3.format(",.3s"));
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    d3.csv("data.csv", function(error, data) {
+        var accessor = sroc.accessor();
+
+        data = data.slice(0, 200).map(function(d) {
+            // Open, high, low, close generally not required, is being used here to demonstrate colored volume
+            // bars
+            return {
+                date: parseDate(d.Date),
+                volume: +d.Volume,
+                open: +d.Open,
+                high: +d.High,
+                low: +d.Low,
+                close: +d.Close
+            };
+        }).sort(function(a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
+
+        svg.append("g")
+                .attr("class", "sroc");
+
+        svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")");
+
+        svg.append("g")
+                .attr("class", "y axis")
+            .append("text")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 6)
+                .attr("dy", ".71em")
+                .style("text-anchor", "end")
+                .text("SROC");
+
+        // Data to display initially
+        draw(data.slice(0, data.length-20));
+        // Only want this button to be active if the data has loaded
+        d3.select("button").on("click", function() { draw(data); }).style("display", "inline");
+    });
+
+    function draw(data) {
+        var srocData = techan.indicator.sroc()(data);
+        x.domain(srocData.map(sroc.accessor().d));
+        y.domain(techan.scale.plot.sroc(srocData).domain());
+
+        svg.selectAll("g.sroc").datum(srocData).call(sroc);
+        svg.selectAll("g.x.axis").call(xAxis);
+        svg.selectAll("g.y.axis").call(yAxis);
+    }
+
+</script>

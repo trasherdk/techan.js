@@ -1,0 +1,1 @@
+Closing price line rendering demo. Demonstrates line rendering.
