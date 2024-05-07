@@ -92,5 +92,5 @@ function bucketSort(array, bucketSize, key) {
 
 console.clear();
 const data1 = insertionSort(data, 'price');
-const data2 = bucketSort(data1, 0.05, 'price');
+const data2 = bucketSort(data1, 0.10, 'price');
 console.log(data2.length, data2);

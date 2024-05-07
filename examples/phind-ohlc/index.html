@@ -18,17 +18,21 @@
 	<body>
 		<chart></chart>
 		<script>
-			const fetcher = () => {
-				return d3.json('data.json')
-					.then(data => data)
-					.catch(err => {
-						console.log('d3.json() :', err)
-						return []
-					})
+			const fetcher = async () => {
+				try {
+					const response = await d3.json('data.json')
+					return response
+				} catch (err) {
+					console.log('d3.json() :', err)
+					return []
+				}
 			}
 
 			(async () => {
-				let feed = await fetcher().then(res => res)
+				const feed = await fetcher().then(res => {
+					console.log('data:', res)
+					return res
+				})
 				console.log('feed:', feed)
 
 				let data = feed.map(function (d) {
