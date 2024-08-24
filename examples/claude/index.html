@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Pinned Header and Footer Layout</title>
+		<style>
+			body,
+			html {
+				margin: 0;
+				padding: 0;
+				height: 100%;
+				font-family: Arial, sans-serif;
+			}
+
+			body {
+				display: flex;
+				flex-direction: column;
+			}
+
+			header {
+				background-color: #333;
+				color: white;
+				padding: 1rem;
+				position: sticky;
+				top: 0;
+				z-index: 1000;
+			}
+
+			nav ul {
+				list-style-type: none;
+				padding: 0;
+				margin: 0;
+			}
+
+			nav ul li {
+				display: inline;
+				margin-right: 1rem;
+			}
+
+			nav ul li a {
+				color: white;
+				text-decoration: none;
+			}
+
+			main {
+				flex: 1;
+				overflow-y: auto;
+				padding: 1rem;
+			}
+
+			footer {
+				background-color: #333;
+				color: white;
+				text-align: center;
+				padding: 1rem;
+				position: sticky;
+				bottom: 0;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header>
+			<nav>
+				<ul>
+					<li><a href="#home">Home</a></li>
+					<li><a href="#about">About</a></li>
+					<li><a href="#services">Services</a></li>
+					<li><a href="#contact">Contact</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main>
+			<h1>Welcome to Our Website</h1>
+			<p>This is the main content area. It will be scrollable if the content exceeds the viewport height.</p>
+			<!-- Add more content here to test scrolling -->
+			<div style="height: 2000px; background: linear-gradient(to bottom, #f0f0f0, #d0d0d0);">
+				Scroll down to see the footer pinned at the bottom.
+			</div>
+		</main>
+
+		<footer>
+			<p>&copy; 2024 Your Company Name. All rights reserved.</p>
+		</footer>
+	</body>
+
+</html>
