@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Flexbox Header and Footer Layout</title>
+		<title>Website with Logo and Navigation</title>
 		<style>
 			html,
 			body {
@@ -25,7 +25,26 @@
 				height: 50px;
 				display: flex;
 				align-items: center;
-				padding-left: 1rem;
+				padding: 0 1rem;
+			}
+
+			.logo-container {
+				display: flex;
+				align-items: center;
+				margin-right: 2rem;
+			}
+
+			.logo {
+				height: 40px;
+				width: 40px;
+				margin-right: 0.5rem;
+				background-color: #fff;
+				/* Placeholder for the actual logo */
+			}
+
+			.website-name {
+				font-size: 1.2rem;
+				font-weight: bold;
 			}
 
 			nav ul {
@@ -71,6 +90,10 @@
 
 	<body>
 		<header>
+			<div class="logo-container">
+				<div class="logo"></div>
+				<span class="website-name">My Website</span>
+			</div>
 			<nav>
 				<ul>
 					<li><a href="#home">Home</a></li>
