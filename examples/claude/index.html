@@ -4,13 +4,13 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Pinned Header and Footer Layout</title>
+		<title>Flexbox Header and Footer Layout</title>
 		<style>
-			body,
-			html {
+			html,
+			body {
+				height: 100%;
 				margin: 0;
 				padding: 0;
-				height: 100%;
 				font-family: Arial, sans-serif;
 			}
 
@@ -23,9 +23,6 @@
 				background-color: #333;
 				color: white;
 				padding: 1rem;
-				position: sticky;
-				top: 0;
-				z-index: 1000;
 			}
 
 			nav ul {
@@ -55,8 +52,6 @@
 				color: white;
 				text-align: center;
 				padding: 1rem;
-				position: sticky;
-				bottom: 0;
 			}
 		</style>
 	</head>
@@ -78,7 +73,7 @@
 			<p>This is the main content area. It will be scrollable if the content exceeds the viewport height.</p>
 			<!-- Add more content here to test scrolling -->
 			<div style="height: 2000px; background: linear-gradient(to bottom, #f0f0f0, #d0d0d0);">
-				Scroll down to see the footer pinned at the bottom.
+				Scroll down to see the footer at the bottom.
 			</div>
 		</main>
 
