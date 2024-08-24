@@ -4,7 +4,7 @@
 	<head>
 		<meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<title>Website with Logo and Navigation</title>
+		<title>Website with Logo, Navigation, and Dropdown</title>
 		<style>
 			html,
 			body {
@@ -56,6 +56,7 @@
 
 			nav ul li {
 				margin-right: 1rem;
+				position: relative;
 			}
 
 			nav ul li:last-child {
@@ -65,6 +66,37 @@
 			nav ul li a {
 				color: white;
 				text-decoration: none;
+				display: block;
+				padding: 15px 0;
+			}
+
+			.has-submenu>a::after {
+				content: ' ▼';
+				font-size: 0.7em;
+				vertical-align: middle;
+				margin-left: 3px;
+			}
+
+			.submenu {
+				display: none;
+				position: absolute;
+				top: 100%;
+				left: 0;
+				background-color: #444;
+				min-width: 150px;
+				box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+			}
+
+			.submenu li {
+				margin: 0;
+			}
+
+			.submenu li a {
+				padding: 10px 15px;
+			}
+
+			nav ul li:hover .submenu {
+				display: block;
 			}
 
 			main {
@@ -98,7 +130,14 @@
 				<ul>
 					<li><a href="#home">Home</a></li>
 					<li><a href="#about">About</a></li>
-					<li><a href="#services">Services</a></li>
+					<li class="has-submenu">
+						<a href="#services">Services</a>
+						<ul class="submenu">
+							<li><a href="#service1">Service 1</a></li>
+							<li><a href="#service2">Service 2</a></li>
+							<li><a href="#service3">Service 3</a></li>
+						</ul>
+					</li>
 					<li><a href="#contact">Contact</a></li>
 				</ul>
 			</nav>
