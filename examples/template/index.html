@@ -1,19 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Template</title>
-  <script src="https://d3js.org/d3.v4.min.js"></script>
-  <script src="https://techanjs.org/techan.min.js"></script>
 
-  <link href="styles.css" rel="stylesheet">
-  <!--script src="/lib/library.js"></script-->
-</head>
-<body>
-  
-</body>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Website with Logo, Navigation, and Dropdown</title>
+		<style>
+			html,
+			body {
+				height: 100%;
+				margin: 0;
+				padding: 0;
+				font-family: Arial, sans-serif;
+			}
+
+			body {
+				display: flex;
+				flex-direction: column;
+			}
+
+			header {
+				background-color: #333;
+				color: white;
+				height: 50px;
+				display: flex;
+				align-items: center;
+				padding: 0 1rem;
+			}
+
+			.logo-container {
+				display: flex;
+				align-items: center;
+				margin-right: 2rem;
+				border-radius: 50%;
+			}
+
+			.logo {
+				height: 40px;
+				width: 40px;
+				margin-right: 0.5rem;
+				background-color: #fff;
+				border-radius: 50%;
+				/* Placeholder for the actual logo */
+			}
+
+			.logo img {
+				max-width: 100%;
+				height: auto;
+				border-radius: 50%;
+			}
+
+			.website-name {
+				font-size: 1.2rem;
+				font-weight: bold;
+			}
+
+			nav ul {
+				list-style-type: none;
+				padding: 0;
+				margin: 0;
+				display: flex;
+			}
+
+			nav ul li {
+				margin-right: 1rem;
+				position: relative;
+			}
+
+			nav ul li:last-child {
+				margin-right: 0;
+			}
+
+			nav ul li a {
+				color: white;
+				text-decoration: none;
+				display: block;
+				padding: 15px 0;
+			}
+
+			.has-submenu>a::after {
+				content: ' ▼';
+				font-size: 0.7em;
+				vertical-align: middle;
+				margin-left: 3px;
+			}
+
+			.submenu {
+				display: none;
+				position: absolute;
+				top: 100%;
+				left: 0;
+				background-color: #444;
+				min-width: 150px;
+				box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+			}
+
+			.submenu li {
+				margin: 0;
+			}
+
+			.submenu li a {
+				padding: 10px 15px;
+			}
+
+			nav ul li:hover .submenu {
+				display: block;
+			}
+
+			main {
+				flex: 1;
+				overflow-y: auto;
+				padding: 1rem;
+			}
+
+			footer {
+				background-color: #333;
+				color: white;
+				height: 50px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+			}
+
+			footer p {
+				margin: 0;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header>
+			<div class="logo-container">
+				<div class="logo">
+					<img src="/images/fumlersoft-shield-64.png" alt="Logo">
+				</div>
+				<span class="website-name">My Website</span>
+			</div>
+			<nav>
+				<ul>
+					<li><a href="#home">Home</a></li>
+					<li><a href="#about">About</a></li>
+					<li class="has-submenu">
+						<a href="#services">Services</a>
+						<ul class="submenu">
+							<li><a href="#service1">Service 1</a></li>
+							<li><a href="#service2">Service 2</a></li>
+							<li><a href="#service3">Service 3</a></li>
+						</ul>
+					</li>
+					<li><a href="#contact">Contact</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main>
+			<h1>Welcome to Our Website</h1>
+			<p>This is the main content area. It will be scrollable if the content exceeds the viewport height.</p>
+			<!-- Add more content here to test scrolling -->
+			<div style="height: 2000px; background: linear-gradient(to bottom, #f0f0f0, #d0d0d0);">
+				Scroll down to see the footer at the bottom.
+			</div>
+		</main>
+
+		<footer>
+			<p>&copy; 2024 Your Company Name. All rights reserved.</p>
+		</footer>
+	</body>
+
 </html>
