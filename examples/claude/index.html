@@ -32,6 +32,7 @@
 				display: flex;
 				align-items: center;
 				margin-right: 2rem;
+				border-radius: 50%;
 			}
 
 			.logo {
@@ -39,7 +40,14 @@
 				width: 40px;
 				margin-right: 0.5rem;
 				background-color: #fff;
+				border-radius: 50%;
 				/* Placeholder for the actual logo */
+			}
+
+			.logo img {
+				max-width: 100%;
+				height: auto;
+				border-radius: 50%;
 			}
 
 			.website-name {
@@ -123,7 +131,9 @@
 	<body>
 		<header>
 			<div class="logo-container">
-				<div class="logo"></div>
+				<div class="logo">
+					<img src="/images/fumlersoft-shield-64.png" alt="Logo">
+				</div>
 				<span class="website-name">My Website</span>
 			</div>
 			<nav>
