@@ -1,19 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Template</title>
-  <script src="https://d3js.org/d3.v4.min.js"></script>
-  <script src="https://techanjs.org/techan.min.js"></script>
 
-  <link href="styles.css" rel="stylesheet">
-  <!--script src="/lib/library.js"></script-->
-</head>
-<body>
-  
-</body>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="0" />
+		<title>Website with Logo, Navigation, and Dropdown</title>
+		<link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16">
+		<link href="./styles.css" rel="stylesheet">
+	</head>
+
+	<body>
+		<header>
+			<div class="logo-container">
+				<div class="logo">
+					<img src="/images/fumlersoft-shield-64.png" alt="Logo">
+				</div>
+				<span class="website-name">My Website</span>
+			</div>
+			<nav>
+				<ul>
+					<li><a href="#home">Home</a></li>
+					<li><a href="#about">About</a></li>
+					<li class="has-submenu">
+						<a href="#services">Services</a>
+						<ul class="submenu">
+							<li><a href="#service1">Service 1</a></li>
+							<li><a href="#service2">Service 2</a></li>
+							<li><a href="#service3">Service 3</a></li>
+						</ul>
+					</li>
+					<li><a href="#contact">Contact</a></li>
+				</ul>
+			</nav>
+		</header>
+
+		<main>
+			<h1>Welcome to Our Website</h1>
+			<p>This is the main content area. It will be scrollable if the content exceeds the viewport height.</p>
+			<!-- Add more content here to test scrolling -->
+			<div style="height: 2000px; background: linear-gradient(to bottom, #f0f0f0, #d0d0d0);">
+				Scroll down to see the footer at the bottom.
+			</div>
+		</main>
+
+		<footer>
+			<p>&copy; 2024 Your Company Name. All rights reserved.</p>
+		</footer>
+	</body>
+
 </html>
