@@ -108,7 +108,7 @@ main {
 footer {
 	background-color: #333;
 	color: white;
-	height: 50px;
+	height: 25px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
