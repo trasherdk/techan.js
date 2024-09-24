@@ -1,0 +1,293 @@
+html,
+body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	font-family: Arial, sans-serif;
+}
+
+body {
+	display: flex;
+	flex-direction: column;
+	background-color: #1a1a1a;
+	color: #fff;
+}
+
+header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 20px;
+	background-color: #2a2a2a;
+}
+
+header .logo {
+	display: flex;
+	align-items: center;
+}
+
+header .logo img {
+	width: 30px;
+	height: 30px;
+	margin-right: 10px;
+}
+
+header .menu {
+	display: flex;
+	align-items: center;
+}
+
+header .menu a {
+	color: #fff;
+	text-decoration: none;
+	margin: 0 10px;
+}
+
+header .menu a:hover {
+	text-decoration: underline;
+}
+
+header .user-info {
+	display: flex;
+	align-items: center;
+}
+
+header .user-info .balance {
+	margin-right: 20px;
+}
+
+header .user-info .icons i {
+	margin: 0 5px;
+	cursor: pointer;
+}
+
+main {
+	display: flex;
+	height: calc(100vh - 50px);
+	flex: 1;
+	overflow-y: auto;
+	padding: 1rem;
+}
+
+.sidebar {
+	width: 300px;
+	background-color: #2a2a2a;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+}
+
+.sidebar .section {
+	margin-bottom: 20px;
+}
+
+.sidebar .section h3 {
+	margin-bottom: 10px;
+	font-size: 16px;
+}
+
+.sidebar .section .item {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 5px;
+}
+
+.sidebar .section .item .price {
+	color: #4caf50;
+}
+
+.sidebar .section .item .time {
+	color: #999;
+}
+
+.sidebar .order-book {
+	margin-top: auto;
+}
+
+.sidebar .order-book .order {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 5px;
+}
+
+.sidebar .order-book .order .price {
+	color: #4caf50;
+}
+
+.sidebar .order-book .order .quantity {
+	color: #999;
+}
+
+.content {
+	flex: 1;
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+}
+
+.content .tabs {
+	display: flex;
+	margin-bottom: 20px;
+}
+
+.content .tabs .tab {
+	margin-right: 20px;
+	cursor: pointer;
+}
+
+.content .tabs .tab.active {
+	font-weight: bold;
+}
+
+.content .chart {
+	flex: 1;
+	background-color: #1a1a1a;
+	border: 1px solid #333;
+	position: relative;
+}
+
+.content .chart .chart-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px;
+	background-color: #2a2a2a;
+}
+
+.content .chart .chart-header .market-info {
+	display: flex;
+	align-items: center;
+}
+
+.content .chart .chart-header .market-info .market {
+	margin-right: 20px;
+}
+
+.content .chart .chart-header .market-info .price {
+	color: #4caf50;
+}
+
+.content .chart .chart-header .market-info .change {
+	color: #4caf50;
+}
+
+.content .chart .chart-header .actions {
+	display: flex;
+	align-items: center;
+}
+
+.content .chart .chart-header .actions i {
+	margin: 0 5px;
+	cursor: pointer;
+}
+
+.content .chart .chart-body {
+	flex: 1;
+	position: relative;
+}
+
+.content .chart .chart-body .chart-canvas {
+	width: 100%;
+	height: 100%;
+}
+
+.content .chart .chart-body .chart-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: #999;
+}
+
+.content .orders {
+	margin-top: 20px;
+	background-color: #2a2a2a;
+	padding: 10px;
+	display: flex;
+	justify-content: space-between;
+}
+
+.content .orders .order {
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
+}
+
+.content .orders .order .info {
+	display: flex;
+	flex-direction: column;
+}
+
+.content .orders .order .info .market {
+	margin-bottom: 5px;
+}
+
+.content .orders .order .info .price {
+	color: #4caf50;
+}
+
+.content .orders .order .info .quantity {
+	color: #999;
+}
+
+.content .orders .order .progress {
+	display: flex;
+	align-items: center;
+}
+
+.content .orders .order .progress .bar {
+	width: 100px;
+	height: 10px;
+	background-color: #333;
+	margin-right: 10px;
+	position: relative;
+}
+
+.content .orders .order .progress .bar .fill {
+	width: 0;
+	height: 100%;
+	background-color: #4caf50;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.content .orders .order .progress .percentage {
+	color: #999;
+}
+
+.footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 20px;
+	background-color: #2a2a2a;
+}
+
+.footer .links {
+	display: flex;
+	align-items: center;
+}
+
+.footer .links a {
+	color: #999;
+	text-decoration: none;
+	margin: 0 10px;
+}
+
+.footer .links a:hover {
+	text-decoration: underline;
+}
+
+.footer .chat {
+	display: flex;
+	align-items: center;
+}
+
+.footer .chat i {
+	margin-right: 5px;
+}
