@@ -9,7 +9,8 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   //  let parseDate = d3.timeParse("%d-%b-%y");
   //  let parseDate = d3.timeParse("%h:%m");
 
-  const root = document.getElementsByClassName("container")[0];
+  //const root = document.getElementsByClassName("container")[0];
+  const root = document.getElementsByTagName("main")[0];
   const chart = document.createElement("chart");
   chart.setAttribute("id", name);
   chart.setAttribute("class", "chart");
