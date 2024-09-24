@@ -20,6 +20,25 @@ header {
 	padding: 0 1rem;
 }
 
+main {
+	flex: 1;
+	overflow-y: auto;
+	padding: 1rem;
+}
+
+footer {
+	display: flex;
+	color: white;
+	background-color: #333;
+	height: 25px;
+	align-items: center;
+	justify-content: center;
+}
+
+footer center {
+	margin: auto;
+}
+
 .logo-container {
 	display: flex;
 	align-items: center;
@@ -97,23 +116,4 @@ nav ul li a {
 
 nav ul li:hover .submenu {
 	display: block;
-}
-
-main {
-	flex: 1;
-	overflow-y: auto;
-	padding: 1rem;
-}
-
-footer {
-	background-color: #333;
-	color: white;
-	height: 25px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-footer p {
-	margin: 0;
 }
