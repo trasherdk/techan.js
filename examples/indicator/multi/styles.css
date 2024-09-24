@@ -1,22 +1,21 @@
-html {
-	box-sizing: border-box;
-}
-
-*,
-*::after,
-*::before {
+html,
+body {
+	height: 100%;
 	margin: 0;
 	padding: 0;
-	box-sizing: inherit;
+	font-family: Arial, sans-serif;
 }
 
 body {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
 	font-size: 16px;
 	background-color: #4a5e5e;
 	overflow-y: auto;
 }
 
-.header {
+header {
 	position: sticky;
 	top: 0;
 	background-color: #1387b5;
@@ -25,16 +24,13 @@ body {
 	width: 100%;
 }
 
-.container {
+main {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-around;
+	overflow-y: auto;
+	padding: 1rem;
 	gap: 1rem;
-	margin: 1rem;
-	/*
-	margin-top: 4rem;
-	*/
-	margin-bottom: 2.3rem;
 }
 
 .chart {
@@ -43,14 +39,15 @@ body {
 	border: 1px solid darkgray;
 }
 
-.footer {
-	position: fixed;
-	right: 0;
-	bottom: 0;
-	left: 0;
+footer {
+	display: flex;
+	color: white;
 	background-color: #1387b5;
-	/* margin-top: 14px; */
-	min-height: 2rem;
-	/* width: 100%; */
-	z-index: 1000;
+	height: 25px;
+	align-items: center;
+	justify-content: center;
+}
+
+footer center {
+	margin: auto;
 }
