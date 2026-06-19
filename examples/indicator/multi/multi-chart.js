@@ -172,10 +172,10 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     try {
       data = await d3.json(defparam.dataurl + str)
         .then(response => {
-          if (response.HasWarning) {
-            console.log('response.HasWarning: delay')
-            delay(0.2)
-            console.log('response.HasWarning: continue')
+          if (response.Response === "Error") {
+            console.log('response: error delay')
+            delay(0.5)
+            console.log('response: error continue')
           }
 
           if (response.Response === 'Error') {
