@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+		<meta http-equiv="Pragma" content="no-cache" />
+		<meta http-equiv="Expires" content="0" />
+		<link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16">
+
+		<script src="/lib/d3/v5/d3.js"></script>
+		<script src="/lib/techan.min.js"></script>
+		<script src="/lib/library.js"></script>
+
+		<link href="styles.css" rel="stylesheet">
+		<link href="kraken-chart.css" rel="stylesheet">
+		<script src="kraken.js"></script>
+		<script src="kraken-chart.js"></script>
+		<style>
+			p {
+				padding-left: 5px;
+				padding-top: 5px;
+			}
+
+			a {
+				color: darkblue;
+			}
+		</style>
+	</head>
+
+	<body>
+		<header>
+			<p>&nbsp;</p>
+		</header>
+		<main></main>
+		<footer>
+			<p>&nbsp;</p>
+		</footer>
+
+		<script>
+			let params
+			window.addEventListener('DOMContentLoaded', (event) => {
+				params = getSearchParameters()
+
+				params.crypto = (params.crypto ? params.crypto : 'XMR,BTC')
+				params.currency = (params.currency ? params.currency : 'EUR')
+				params.res = (params.res ? params.res : 'minute')
+				params.agg = (params.agg ? params.agg : 1)
+				params.api = (params.api ? params.api : kraken.defaultApi)
+				console.log('Parameters', params)
+				document.title = 'Kraken: ' + params.crypto + '-' + params.currency
+
+				const divisor = Math.floor(window.innerWidth / 500)
+				const dim = dimension()
+				params.crypto.split(',').map(function (ticker) {
+					try {
+						chart(`chart-${ticker}`, ticker.trim(), params.currency, (window.innerWidth - (dim.margin.left + dim.margin.right)) / divisor, 350)
+							.catch(error => {
+								console.log('chart().catch', error.message)
+							})
+					} catch (error) {
+						console.log('index.html - try => catch', error)
+					}
+				})
+			})
+
+		</script>
+
+	</body>
+
+</html>
