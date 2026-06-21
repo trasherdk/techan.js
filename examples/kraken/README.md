@@ -1,15 +1,25 @@
 Multi-crypto candlestick charts with SMA and EMA indicators, backed by [Kraken public OHLC](https://docs.kraken.com/api/docs/rest-api/get-ohlc-data) data.
 
-Kraken does not allow browser CORS, so this example fetches through a same-origin PHP proxy (`api/ohlc.php`). The fetch layer is written to switch to a **kraken-history** API later without changing the chart code.
+Kraken does not allow browser CORS, so this example fetches through same-origin PHP proxies:
 
-## URL search parameters
+- `api/markets.php` — [Assets](https://docs.kraken.com/api/docs/rest-api/get-asset-info) + [AssetPairs](https://docs.kraken.com/api/docs/rest-api/get-tradable-asset-pairs) (1h server cache, 1h sessionStorage cache)
+- `api/ohlc.php` — [OHLC](https://docs.kraken.com/api/docs/rest-api/get-ohlc-data) (60s cache)
 
-Parameters are read from the page query string via `getSearchParameters()` in `/lib/library.js`.
+Symbol and pair resolution uses Kraken’s live market data (`wsname` lookup), not a hardcoded map. Common aliases (`BTC` → `XBT`, `DOGE` → `XDG`) are still applied where Kraken’s wsname differs from the usual ticker.
 
-| Parameter  | Default        | Description |
+## Settings
+
+Parameters are changed in the **Setup** dialog (header button). On first visit the dialog opens automatically; choices are saved to `localStorage` (`techan.kraken.params`) when you click **Apply**. The URL stays clean — settings are not written to the query string.
+
+Resolution order when loading:
+
+1. Built-in defaults
+2. Values from `localStorage`
+
+| Setting    | Default        | Description |
 |------------|----------------|-------------|
-| `crypto`   | `XMR,BTC`      | Comma-separated symbols (`XMR`, `BTC`) or Kraken pair names (`XXMRZEUR`). One chart per entry. |
-| `currency` | `EUR`          | Quote currency when resolving symbols to Kraken pairs. |
+| `crypto`   | `XMR,BTC`      | Comma-separated wsname bases (`XMR`, `XBT`) or aliases (`BTC`, `DOGE`). Resolved via Kraken AssetPairs. |
+| `currency` | `EUR`          | Quote currency (wsname suffix, e.g. `EUR`, `USD`). Options populated from Kraken. |
 | `res`      | `minute`       | Resolution preset: `minute`, `hour`, or `day`. Maps to Kraken interval minutes. |
 | `agg`      | `1`            | Aggregation multiplier. For `res=minute`, must be a Kraken interval (1, 5, 15, 30, 60, 240, 1440, …). |
 | `interval` | *(from res)*   | Optional Kraken interval override in minutes (same allowed values as `agg`). |
@@ -31,29 +41,9 @@ Kraken returns at most **720** candles per request.
 
 ## Examples
 
-Default (XMR and BTC vs EUR, 1-minute):
+Open `/kraken/` and use **Setup** to choose symbols and resolution. Settings persist in the browser across visits.
 
-```
-/kraken/
-```
-
-Hourly candles:
-
-```
-/kraken/?crypto=ETH,BTC&res=hour
-```
-
-Direct Kraken pair name:
-
-```
-/kraken/?crypto=XXMRZEUR&interval=5
-```
-
-Future **kraken-history** backend:
-
-```
-/kraken/?api=https://your-kraken-history.example/api/ohlc&crypto=XMR,BTC
-```
+Future **kraken-history** backend: set the API endpoint in **Setup → Advanced**.
 
 ## kraken-history integration
 
@@ -75,7 +65,7 @@ Query parameters: `pair`, `interval`, optional `since`.
 
 ## Requirements
 
-- PHP enabled on the web server for `api/ohlc.php` (proxies to `api.kraken.com`, 60s cache).
+- PHP enabled on the web server for `api/ohlc.php` and `api/markets.php`.
 - Outbound HTTPS from the server to Kraken.
 
 ## Related

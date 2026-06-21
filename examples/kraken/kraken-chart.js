@@ -6,6 +6,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   const height = Math.floor(fullHeight - margin.top - margin.bottom)
   const volumeHeight = fullHeight * 0.25
   const pair = resolvePair(symbol, currency)
+  const wsname = pairWsname(pair)
   const interval = params.interval
     ? Number(params.interval)
     : resolveInterval(params.res, params.agg)
@@ -61,21 +62,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     .xScale(x)
     .yScale(yVolume)
 
-  let format
-  switch (true) {
-    case interval >= 1440:
-      format = '%m %y'
-      break
-    case interval >= 60:
-      format = ' %d / %m'
-      break
-    default:
-      format = '%H:%M'
-      break
-  }
-
-  format = d3.timeFormat('%H:%M')
-  let xAxis = d3.axisBottom(x).tickFormat(d3.timeFormat(format))
+  let xAxis = d3.axisBottom(x).tickFormat(axisTimeFormat(interval))
 
   let yAxis = d3.axisRight(y)
 
@@ -104,7 +91,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   svg.append('text')
     .attr('class', 'symbol')
     .attr('x', 5)
-    .text(`${symbol} (${pair}, ${interval}m)`)
+    .text(`${symbolLabel(wsname.split('/')[0])} (${wsname}, ${interval}m)`)
 
   svg.append('g')
     .attr('class', 'volume')

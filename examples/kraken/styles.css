@@ -18,9 +18,37 @@ body {
 header {
 	position: sticky;
 	top: 0;
+	z-index: 10;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
 	background-color: #1387b5;
 	min-height: 3rem;
 	width: 100%;
+	padding: 0 1rem;
+	box-sizing: border-box;
+}
+
+header h1 {
+	margin: 0;
+	font-size: 1.1rem;
+	font-weight: 600;
+	color: white;
+}
+
+header button {
+	border: 1px solid rgba(255, 255, 255, 0.5);
+	background: white;
+	color: #1387b5;
+	padding: 0.45rem 0.9rem;
+	border-radius: 4px;
+	font-size: 0.95rem;
+	cursor: pointer;
+}
+
+header button:hover {
+	background: #e8f6fc;
 }
 
 main {
@@ -50,4 +78,139 @@ footer {
 
 footer center {
 	margin: auto;
+}
+
+.load-error {
+	color: white;
+	padding: 1rem;
+	max-width: 40rem;
+}
+
+.kraken-settings {
+	border: none;
+	border-radius: 8px;
+	padding: 0;
+	width: min(560px, calc(100vw - 2rem));
+	max-height: calc(100vh - 2rem);
+	overflow: auto;
+	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.kraken-settings::backdrop {
+	background: rgba(0, 0, 0, 0.45);
+}
+
+.kraken-settings-form {
+	padding: 1.25rem;
+}
+
+.kraken-settings-header h2 {
+	margin: 0 0 0.35rem;
+	font-size: 1.25rem;
+}
+
+.kraken-settings-header p {
+	margin: 0 0 1rem;
+	color: #555;
+	font-size: 0.95rem;
+}
+
+.kraken-settings-form fieldset {
+	border: 1px solid #d0d0d0;
+	border-radius: 6px;
+	margin: 0 0 1rem;
+	padding: 0.75rem;
+}
+
+.kraken-settings-form legend {
+	padding: 0 0.35rem;
+	font-weight: 600;
+}
+
+.symbol-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+	gap: 0.35rem 0.75rem;
+	margin-bottom: 0.75rem;
+}
+
+.symbol-option {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.95rem;
+}
+
+.field-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 0.35rem;
+	margin-bottom: 0.75rem;
+	font-size: 0.95rem;
+}
+
+.field span {
+	font-weight: 600;
+}
+
+.field input,
+.field select {
+	padding: 0.45rem 0.55rem;
+	border: 1px solid #bbb;
+	border-radius: 4px;
+	font: inherit;
+}
+
+.field small {
+	color: #666;
+	font-size: 0.85rem;
+}
+
+.advanced {
+	margin-bottom: 1rem;
+}
+
+.advanced summary {
+	cursor: pointer;
+	font-weight: 600;
+	margin-bottom: 0.5rem;
+}
+
+.kraken-settings-actions {
+	display: flex;
+	justify-content: flex-end;
+	gap: 0.5rem;
+}
+
+.kraken-settings-actions button {
+	padding: 0.5rem 1rem;
+	border-radius: 4px;
+	border: 1px solid #bbb;
+	font: inherit;
+	cursor: pointer;
+}
+
+.kraken-settings-actions .primary {
+	background: #1387b5;
+	border-color: #1387b5;
+	color: white;
+}
+
+.kraken-settings-actions .primary:hover {
+	background: #0f7196;
+}
+
+.kraken-settings-actions .secondary {
+	background: white;
+}
+
+.kraken-settings-actions .secondary:hover {
+	background: #f3f3f3;
 }
