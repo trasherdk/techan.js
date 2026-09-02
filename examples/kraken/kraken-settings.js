@@ -317,6 +317,7 @@ async function bootstrapKrakenPage () {
   }
 
   console.log('Parameters', params)
+  initKrakenTheme()
   initKrakenSettings()
 
   const hasStored = Object.keys(loadStoredKrakenParams()).length > 0

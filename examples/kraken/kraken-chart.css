@@ -1,135 +1,174 @@
-    .chart {
-        position: relative;
-        --live-tick-color: #000000e8;
-    }
+html[data-theme="light"] {
+	--live-tick-color: #000000e8;
+	--chart-symbol: #bbbbbb;
+	--chart-axis: #333333;
+	--chart-axis-line: #cccccc;
+	--ohlc-neutral: #000000;
+	--ohlc-up: hsl(120, 98%, 40%);
+	--ohlc-down: #ff0000;
+	--ohlc-equal: #888888;
+	--volume-neutral: #c3c3c3;
+	--volume-up: #a5f58c;
+	--volume-down: #fc8484;
+	--ma-0: #1f77b4;
+	--ma-1: #aec7e8;
+	--ma-2: #ff7f0e;
+	--live-led-bg: #666666;
+	--live-led-border: #444444;
+}
 
-    .live-hud {
-        position: absolute;
-        top: 6px;
-        right: 6px;
-        display: flex;
-        flex-direction: row;
-        align-items: flex-end;
-        gap: 5px;
-        pointer-events: none;
-        z-index: 2;
-    }
+html[data-theme="dark"] {
+	--live-tick-color: #ffffffe8;
+	--chart-symbol: #777777;
+	--chart-axis: #aaaaaa;
+	--chart-axis-line: #444444;
+	--ohlc-neutral: #cccccc;
+	--ohlc-up: hsl(120, 70%, 50%);
+	--ohlc-down: #ff6666;
+	--ohlc-equal: #888888;
+	--volume-neutral: #444444;
+	--volume-up: #3d7a3d;
+	--volume-down: #8a4040;
+	--ma-0: #5eb3ff;
+	--ma-1: #8ec8ff;
+	--ma-2: #ffb347;
+	--live-led-bg: #888888;
+	--live-led-border: #666666;
+}
 
-    .live-tick {
-        font-size: x-small;
-        font-family: sans-serif;
-        color: var(--live-tick-color);
-        font-variant-numeric: tabular-nums;
-        white-space: nowrap;
-        line-height: 1;
-    }
+.chart {
+	position: relative;
+}
 
-    .live-led {
-        flex-shrink: 0;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #666;
-        border: 1px solid #444;
-        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
-    }
+.live-hud {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	display: flex;
+	flex-direction: row;
+	align-items: flex-end;
+	gap: 5px;
+	pointer-events: none;
+	z-index: 2;
+}
 
-    .live-led.flash {
-        animation: live-led-flash 0.35s ease-out;
-    }
+.live-tick {
+	font-size: x-small;
+	font-family: sans-serif;
+	color: var(--live-tick-color);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
+	line-height: 1;
+}
 
-    @keyframes live-led-flash {
-        0% {
-            background: #39ff14;
-            border-color: #2ecc00;
-            box-shadow: 0 0 10px #39ff14, 0 0 4px #39ff14;
-        }
+.live-led {
+	flex-shrink: 0;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background: var(--live-led-bg);
+	border: 1px solid var(--live-led-border);
+	box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
 
-        100% {
-            background: #666;
-            border-color: #444;
-            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
-        }
-    }
+.live-led.flash {
+	animation: live-led-flash 0.35s ease-out;
+}
 
-    body {
-        font: 1rem sans-serif;
-    }
+@keyframes live-led-flash {
+	0% {
+		background: #39ff14;
+		border-color: #2ecc00;
+		box-shadow: 0 0 10px #39ff14, 0 0 4px #39ff14;
+	}
 
-    .axis text {
-        font-size: 10px;
-    }
+	100% {
+		background: var(--live-led-bg);
+		border-color: var(--live-led-border);
+		box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.15);
+	}
+}
 
-    text.symbol {
-        fill: #BBBBBB;
-    }
+.chart .axis text {
+	font-size: 10px;
+	fill: var(--chart-axis);
+}
 
-    path {
-        fill: none;
-        stroke-width: 1;
-    }
+.chart .axis line,
+.chart .axis path {
+	stroke: var(--chart-axis-line);
+}
 
-    path.ohlc {
-        stroke: #000000;
-        stroke-width: 1;
-    }
+.chart text.symbol {
+	fill: var(--chart-symbol);
+}
 
-    path.ohlc.up {
-        stroke: hsl(120, 98%, 40%);
-    }
+.chart path {
+	fill: none;
+	stroke-width: 1;
+}
 
-    path.ohlc.down {
-        stroke: #FF0000;
-    }
+.chart path.ohlc {
+	stroke: var(--ohlc-neutral);
+	stroke-width: 1;
+}
 
-    path.ohlc.equal {
-        stroke: #888888;
-    }
+.chart path.ohlc.up {
+	stroke: var(--ohlc-up);
+}
 
-    path.volume {
-        fill: #c3c3c3;
-    }
+.chart path.ohlc.down {
+	stroke: var(--ohlc-down);
+}
 
-    path.volume.up {
-        fill: #a5f58c;
-    }
+.chart path.ohlc.equal {
+	stroke: var(--ohlc-equal);
+}
 
-    path.volume.down {
-        fill: #fc8484;
-    }
+.chart path.volume {
+	fill: var(--volume-neutral);
+}
 
-    rect.pane {
-        fill: none;
-        pointer-events: all;
-    }
+.chart path.volume.up {
+	fill: var(--volume-up);
+}
 
-    rect.pane.pane-pan {
-        cursor: grab;
-    }
+.chart path.volume.down {
+	fill: var(--volume-down);
+}
 
-    rect.pane.pane-pan:active {
-        cursor: grabbing;
-    }
+.chart rect.pane {
+	fill: none;
+	pointer-events: all;
+}
 
-    .chart svg g.ohlc,
-    .chart svg g.volume,
-    .chart svg g.indicator {
-        pointer-events: none;
-    }
+.chart rect.pane.pane-pan {
+	cursor: grab;
+}
 
-    .indicator path.line {
-        fill: none;
-        stroke-width: 1;
-    }
+.chart rect.pane.pane-pan:active {
+	cursor: grabbing;
+}
 
-    .ma-0 path.line {
-        stroke: #1f77b4;
-    }
+.chart svg g.ohlc,
+.chart svg g.volume,
+.chart svg g.indicator {
+	pointer-events: none;
+}
 
-    .ma-1 path.line {
-        stroke: #aec7e8;
-    }
+.chart .indicator path.line {
+	fill: none;
+	stroke-width: 1;
+}
 
-    .ma-2 path.line {
-        stroke: #ff7f0e;
-    }
+.chart .ma-0 path.line {
+	stroke: var(--ma-0);
+}
+
+.chart .ma-1 path.line {
+	stroke: var(--ma-1);
+}
+
+.chart .ma-2 path.line {
+	stroke: var(--ma-2);
+}

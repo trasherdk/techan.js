@@ -2,6 +2,7 @@ const kraken = {
   defaultApi: 'api/ohlc.php',
   marketsApi: 'api/markets.php',
   storageKey: 'techan.kraken.params',
+  themeStorageKey: 'techan.kraken.theme',
   viewStorageKey: 'techan.kraken.view',
   marketsCacheKey: 'techan.kraken.markets',
   marketsCacheTtl: 60 * 60 * 1000,
@@ -480,6 +481,75 @@ function registerKrakenViewListener (listener) {
 
 function unregisterKrakenViewListeners () {
   kraken.viewListeners = []
+}
+
+function loadKrakenThemePreference () {
+  try {
+    const stored = localStorage.getItem(kraken.themeStorageKey)
+    if (stored === 'light' || stored === 'dark' || stored === 'system') {
+      return stored
+    }
+  } catch (error) {
+    console.log('loadKrakenThemePreference', error.message)
+  }
+  return 'system'
+}
+
+function resolveKrakenTheme (preference) {
+  preference = preference || loadKrakenThemePreference()
+  if (preference === 'dark' || preference === 'light') {
+    return preference
+  }
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark'
+  }
+  return 'light'
+}
+
+function applyKrakenTheme (preference) {
+  const pref = preference || loadKrakenThemePreference()
+  const resolved = resolveKrakenTheme(pref)
+  document.documentElement.setAttribute('data-theme', resolved)
+  document.documentElement.setAttribute('data-theme-pref', pref)
+
+  const toggle = document.getElementById('kraken-theme-toggle')
+  if (toggle) {
+    const isDark = resolved === 'dark'
+    toggle.setAttribute('aria-pressed', isDark ? 'true' : 'false')
+    toggle.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode')
+    toggle.title = isDark ? 'Switch to light mode' : 'Switch to dark mode'
+  }
+
+  return resolved
+}
+
+function saveKrakenThemePreference (preference) {
+  try {
+    localStorage.setItem(kraken.themeStorageKey, preference)
+  } catch (error) {
+    console.log('saveKrakenThemePreference', error.message)
+  }
+  applyKrakenTheme(preference)
+}
+
+function toggleKrakenTheme () {
+  const next = resolveKrakenTheme() === 'dark' ? 'light' : 'dark'
+  saveKrakenThemePreference(next)
+}
+
+function initKrakenTheme () {
+  applyKrakenTheme(loadKrakenThemePreference())
+
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+    if (loadKrakenThemePreference() === 'system') {
+      applyKrakenTheme('system')
+    }
+  })
+
+  const toggle = document.getElementById('kraken-theme-toggle')
+  if (toggle) {
+    toggle.addEventListener('click', toggleKrakenTheme)
+  }
 }
 
 function resolveKrakenParams () {

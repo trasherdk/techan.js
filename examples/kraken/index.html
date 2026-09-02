@@ -8,22 +8,59 @@
 		<meta http-equiv="Expires" content="0" />
 		<link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16">
 
+		<script>
+			(function () {
+				try {
+					var pref = localStorage.getItem('techan.kraken.theme')
+					var theme = pref === 'dark' ? 'dark'
+						: pref === 'light' ? 'light'
+						: (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+					document.documentElement.setAttribute('data-theme', theme)
+					if (pref) {
+						document.documentElement.setAttribute('data-theme-pref', pref)
+					}
+				} catch (error) {
+					document.documentElement.setAttribute('data-theme', 'light')
+				}
+			})()
+		</script>
+
 		<script src="/lib/d3/v5/d3.js"></script>
 		<script src="/lib/techan.min.js"></script>
 		<script src="/lib/library.js"></script>
 
-		<link href="styles.css" rel="stylesheet">
-		<link href="kraken-chart.css" rel="stylesheet">
-		<script src="kraken.js?v=2"></script>
-		<script src="kraken-live.js?v=2"></script>
-		<script src="kraken-chart.js?v=2"></script>
-		<script src="kraken-settings.js?v=3"></script>
+		<link href="styles.css?v=5" rel="stylesheet">
+		<link href="kraken-chart.css?v=4" rel="stylesheet">
+		<script src="kraken.js?v=5"></script>
+		<script src="kraken-live.js?v=5"></script>
+		<script src="kraken-chart.js?v=5"></script>
+		<script src="kraken-settings.js?v=5"></script>
 	</head>
 
 	<body>
 		<header>
 			<h1>Kraken charts</h1>
-			<button type="button" id="kraken-settings-open">Setup</button>
+			<div class="header-actions">
+				<button type="button" id="kraken-theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode">
+					<svg class="theme-icon theme-icon-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+						<path fill="currentColor" d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+					</svg>
+					<svg class="theme-icon theme-icon-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+						<circle cx="12" cy="12" r="4" fill="currentColor"/>
+						<g stroke="currentColor" stroke-width="2" stroke-linecap="round">
+							<line x1="12" y1="2" x2="12" y2="5"/>
+							<line x1="12" y1="19" x2="12" y2="22"/>
+							<line x1="2" y1="12" x2="5" y2="12"/>
+							<line x1="19" y1="12" x2="22" y2="12"/>
+							<line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/>
+							<line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
+							<line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
+							<line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+						</g>
+					</svg>
+				</button>
+				<button type="button" id="kraken-settings-open">Setup</button>
+			</div>
 		</header>
 		<main></main>
 		<footer>

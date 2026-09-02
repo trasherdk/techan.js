@@ -13,6 +13,8 @@ Symbol and pair resolution uses Kraken’s live market data (`wsname` lookup), n
 
 Parameters are changed in the **Setup** dialog (header button). On first visit the dialog opens automatically; choices are saved to `localStorage` (`techan.kraken.params`) when you click **Apply**. The URL stays clean — settings are not written to the query string.
 
+**Light / dark mode:** use the moon/sun icon in the header. First visit follows the OS preference (`prefers-color-scheme`). Your choice is saved to `localStorage` (`techan.kraken.theme` as `light` or `dark`).
+
 Resolution order when loading:
 
 1. Built-in defaults
