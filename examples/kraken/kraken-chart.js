@@ -490,6 +490,25 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     }
   }
 
+  function mergeBar (target, source) {
+    target.open = source.open
+    target.high = source.high
+    target.low = source.low
+    target.close = source.close
+    target.volumefrom = source.volumefrom
+    target.volumeto = source.volumeto
+    target.volume = source.volume
+    if (source.vwap != null) {
+      target.vwap = source.vwap
+    }
+  }
+
+  function refreshIndicators () {
+    svg.select('g.sma.ma-0').datum(techan.indicator.sma().period(10)(data)).call(sma0.refresh)
+    svg.select('g.sma.ma-1').datum(techan.indicator.sma().period(26)(data)).call(sma1.refresh)
+    svg.select('g.ema.ma-2').datum(techan.indicator.ema().period(9)(data)).call(ema2.refresh)
+  }
+
   function applyBar (bar, options) {
     if (kraken.panning) {
       return false
@@ -507,7 +526,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     let structureChanged = false
 
     if (last && barTime === lastTime) {
-      data[data.length - 1] = bar
+      mergeBar(last, bar)
       replaced = true
     } else if (!last || barTime > lastTime) {
       data.push(bar)
@@ -521,12 +540,17 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
     if (followLive) {
       applyGlobalView(loadKrakenViewState())
-    } else if (structureChanged) {
+    } else if (structureChanged || replaced) {
       updateYScalesForView()
     }
 
-    draw(replaced && !structureChanged ? 'refresh' : 'full')
-    updateLiveTick(bar)
+    if (replaced && !structureChanged) {
+      refreshIndicators()
+      draw('refresh')
+    } else {
+      draw('full')
+    }
+    updateLiveTick(last && barTime === lastTime ? last : bar)
     return true
   }
 

@@ -22,14 +22,16 @@ function wsV2Symbol (wsname) {
 function parseKrakenLiveBar (row) {
   const volumefrom = +row.volume
   const close = +row.close
+  const vwap = +row.vwap
   return {
     date: new Date(row.interval_begin),
     open: +row.open,
     high: +row.high,
     low: +row.low,
     close,
+    vwap: vwap || undefined,
     volumefrom,
-    volumeto: volumefrom * close,
+    volumeto: volumefrom * (vwap || close),
     volume: volumefrom
   }
 }
