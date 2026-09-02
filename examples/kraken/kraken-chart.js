@@ -10,6 +10,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   const interval = params.interval
     ? Number(params.interval)
     : resolveInterval(params.res, params.agg)
+  const maxVisible = visibleBarCount(width)
 
   const root = document.getElementsByTagName('main')[0]
   const chartEl = document.createElement('chart')
@@ -17,6 +18,22 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   chartEl.setAttribute('class', 'chart')
   chartEl.style.maxWidth = `${Math.floor(fullWidth)}px`
   chartEl.style.maxHeight = `${fullHeight}px`
+
+  const liveHud = document.createElement('div')
+  liveHud.className = 'live-hud'
+
+  const liveTick = document.createElement('span')
+  liveTick.className = 'live-tick'
+  liveHud.appendChild(liveTick)
+
+  const liveLed = document.createElement('span')
+  liveLed.className = 'live-led'
+  liveLed.setAttribute('aria-hidden', 'true')
+  liveLed.title = 'Live feed activity'
+  liveHud.appendChild(liveLed)
+
+  chartEl.appendChild(liveHud)
+
   root.appendChild(chartEl)
 
   await d3.json('https://cdn.jsdelivr.net/npm/d3-time-format@3/locale/da-DK.json').then(locale => {
@@ -24,9 +41,6 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   }).catch(error => {
     throw error.message
   })
-
-  let zoom = d3.zoom()
-    .on('zoom', zoomed)
 
   let x = techan.scale.financetime()
     .range([0, width])
@@ -41,9 +55,12 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
   let yInit, yPercentInit, zoomableInit
 
-  let candlestick = techan.plot.candlestick()
+  let ohlc = techan.plot.ohlc()
     .xScale(x)
     .yScale(y)
+
+  let accessor = ohlc.accessor()
+  let volAccessor = krakenVolumeAccessor(accessor)
 
   let sma0 = techan.plot.sma()
     .xScale(x)
@@ -58,11 +75,11 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     .yScale(y)
 
   let volume = techan.plot.volume()
-    .accessor(candlestick.accessor())
+    .accessor(volAccessor)
     .xScale(x)
     .yScale(yVolume)
 
-  let xAxis = d3.axisBottom(x).tickFormat(axisTimeFormat(interval))
+  let xAxis = d3.axisBottom(x)
 
   let yAxis = d3.axisRight(y)
 
@@ -83,10 +100,8 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   svg.append('clipPath')
     .attr('id', `clip-${name}`)
     .append('rect')
-    .attr('x', 0)
-    .attr('y', y(1))
     .attr('width', width)
-    .attr('height', y(0) - y(1))
+    .attr('height', height)
 
   svg.append('text')
     .attr('class', 'symbol')
@@ -98,7 +113,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     .attr('clip-path', `url(#clip-${name})`)
 
   svg.append('g')
-    .attr('class', 'candlestick')
+    .attr('class', 'ohlc')
     .attr('clip-path', `url(#clip-${name})`)
 
   svg.append('g')
@@ -127,11 +142,45 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   svg.append('g')
     .attr('class', 'volume axis')
 
-  svg.append('rect')
+  const pane = svg.append('rect')
     .attr('class', 'pane')
     .attr('width', width)
     .attr('height', height)
-    .call(zoom)
+
+  let panStartDomain = null
+  let panStartX = 0
+  let suppressViewSave = false
+  let rolloverTimer = null
+
+  const pan = d3.drag()
+    .on('start', function () {
+      beginKrakenPan()
+      stopIntervalRollover()
+      panStartDomain = x.zoomable().domain().slice()
+      panStartX = d3.event.x
+      pane.style('cursor', 'grabbing')
+    })
+    .on('drag', function () {
+      const span = panStartDomain[1] - panStartDomain[0]
+      const delta = -((d3.event.x - panStartX) / width) * span
+      const domain = clampXDomain(
+        [panStartDomain[0] + delta, panStartDomain[1] + delta],
+        loadKrakenViewState()
+      )
+      applyPanDomain(domain, loadKrakenViewState())
+      draw('pan')
+      scheduleKrakenPanSync(domain, name)
+    })
+    .on('end', function () {
+      endKrakenPan()
+      pane.style('cursor', 'grab')
+      applyXDomain(x.zoomable().domain(), loadKrakenViewState())
+      draw('refresh')
+      syncViewStateFromChart()
+      scheduleIntervalRollover()
+    })
+
+  pane.classed('pane-pan', true)
 
   let retry = 3
   let data = []
@@ -167,49 +216,354 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     throw new Error(message)
   }
 
-  let accessor = candlestick.accessor()
   let indicatorPreRoll = interval < 60 ? 15 : 6
 
   data = data.sort((a, b) => d3.ascending(accessor.d(a), accessor.d(b)))
 
-  x.domain(techan.scale.plot.time(data, accessor).domain())
-  y.domain(techan.scale.plot.ohlc(data.slice(indicatorPreRoll), accessor).domain())
-  yPercent.domain(techan.scale.plot.percent(y, accessor(data[indicatorPreRoll])).domain())
-  yVolume.domain(techan.scale.plot.volume(data, accessor.v).domain())
+  x.zoomable().clamp(false)
 
-  svg.select('g.candlestick').datum(data).call(candlestick)
-  svg.select('g.volume').datum(data).call(volume)
-  svg.select('g.sma.ma-0').datum(techan.indicator.sma().period(10)(data)).call(sma0)
-  svg.select('g.sma.ma-1').datum(techan.indicator.sma().period(26)(data)).call(sma1)
-  svg.select('g.ema.ma-2').datum(techan.indicator.ema().period(9)(data)).call(ema2)
-
-  zoomableInit = x.zoomable().domain([indicatorPreRoll, data.length]).copy()
-  yInit = y.copy()
-  yPercentInit = yPercent.copy()
-
-  draw()
-
-  function zoomed () {
-    x.zoomable().domain(d3.event.transform.rescaleX(zoomableInit).domain())
-    y.domain(d3.event.transform.rescaleY(yInit).domain())
-    yPercent.domain(d3.event.transform.rescaleY(yPercentInit).domain())
-    draw()
+  function rightPad () {
+    return Math.max(4, Math.floor(maxVisible * 0.08))
   }
 
-  function draw () {
+  function maxPanEnd (state) {
+    const margin = savedKrakenRightMargin(state, rightPad())
+    return data.length - 1 + Math.max(margin * 2.5, rightPad() * 2.5)
+  }
+
+  function clampXDomain (domain, state) {
+    const span = domain[1] - domain[0]
+    let start = domain[0]
+    let end = domain[1]
+    const maxEnd = maxPanEnd(state)
+
+    if (end > maxEnd) {
+      end = maxEnd
+      start = end - span
+    }
+    if (start < 0) {
+      start = 0
+      end = start + span
+    }
+
+    end = Math.min(maxEnd, end)
+    start = Math.max(0, start)
+
+    if (end <= start) {
+      end = start + 2
+    }
+
+    return [start, end]
+  }
+
+  function applyPanDomain (domain, state) {
+    const clamped = clampXDomain(domain, state)
+    x.zoomable().domain(clamped)
+    zoomableInit = x.zoomable().copy()
+    return clamped
+  }
+
+  function applyXDomain (domain, state) {
+    const clamped = clampXDomain(domain, state)
+    x.domain(techan.scale.plot.time(data, accessor).domain())
+    x.zoomable().domain(clamped)
+    zoomableInit = x.zoomable().copy()
+    updateYScalesForView(clamped[0])
+  }
+
+  function updateYScalesForView (viewStart) {
+    const sliceStart = Math.max(0, Math.floor(viewStart))
+    const visible = data.slice(sliceStart)
+    const ohlcSlice = visible.slice(Math.min(indicatorPreRoll, visible.length))
+    y.domain(techan.scale.plot.ohlc(ohlcSlice, accessor).domain())
+    yPercent.domain(techan.scale.plot.percent(y, accessor(data[Math.max(sliceStart, indicatorPreRoll)])).domain())
+    yVolume.domain(techan.scale.plot.volume(visible, volAccessor.v).domain())
+    yInit = y.copy()
+    yPercentInit = yPercent.copy()
+  }
+
+  function shouldFollowLive () {
+    return loadKrakenViewState().followLive !== false
+  }
+
+  function applyGlobalView (state) {
+    state = state || loadKrakenViewState()
+    const span = state.viewSpan || maxVisible
+    const margin = savedKrakenRightMargin(state, rightPad())
+    const defaultEnd = data.length - 1 + margin
+    const panOffset = state.panOffset || 0
+    let end = defaultEnd - panOffset
+    end = Math.min(maxPanEnd(state), end)
+    const start = end - span
+
+    suppressViewSave = true
+    applyXDomain([start, end], state)
+    suppressViewSave = false
+  }
+
+  function syncViewStateFromChart () {
+    if (suppressViewSave) {
+      return
+    }
+
+    const state = loadKrakenViewState()
+    const margin = savedKrakenRightMargin(state, rightPad())
+    const defaultEnd = data.length - 1 + margin
+    const zd = x.zoomable().domain()
+    const span = zd[1] - zd[0]
+    const endBeyondLast = zd[1] - (data.length - 1)
+    let panOffset = Math.max(0, defaultEnd - zd[1])
+    let rightMargin = margin
+
+    if (endBeyondLast > margin + 0.5 && panOffset < 1) {
+      rightMargin = endBeyondLast
+      panOffset = 0
+    }
+
+    saveKrakenViewState({
+      viewSpan: span,
+      rightMargin: rightMargin,
+      panOffset: panOffset,
+      followLive: panOffset < Math.max(2, span * 0.15)
+    })
+  }
+
+  function resetToDefaultView () {
+    const state = loadKrakenViewState()
+    saveKrakenViewState({
+      rightMargin: savedKrakenRightMargin(state, rightPad()),
+      panOffset: 0,
+      followLive: true
+    })
+    applyGlobalView(loadKrakenViewState())
+    draw('refresh')
+  }
+
+  function rebindPlots () {
+    svg.select('g.ohlc').datum(data).call(ohlc)
+    svg.select('g.volume').datum(data).call(volume)
+    svg.select('g.sma.ma-0').datum(techan.indicator.sma().period(10)(data)).call(sma0)
+    svg.select('g.sma.ma-1').datum(techan.indicator.sma().period(26)(data)).call(sma1)
+    svg.select('g.ema.ma-2').datum(techan.indicator.ema().period(9)(data)).call(ema2)
+    pane.raise()
+  }
+
+  rebindPlots()
+  applyGlobalView(loadKrakenViewState())
+  pane.call(pan)
+  pane.on('dblclick', resetToDefaultView)
+  draw('refresh')
+  if (data.length > 0) {
+    updateLiveTick(data[data.length - 1])
+  }
+
+  const removeViewListener = registerKrakenViewListener(function (state, meta) {
+    if (meta && meta.panDomain) {
+      if (meta.sourceId === name) {
+        return
+      }
+      suppressViewSave = true
+      applyPanDomain(meta.panDomain, state)
+      suppressViewSave = false
+      draw('pan')
+      return
+    }
+    applyGlobalView(state)
+    draw('refresh')
+  })
+
+  const v2Symbol = wsV2Symbol(wsname)
+  const intervalMs = interval * 60 * 1000
+
+  registerKrakenLiveHandler(v2Symbol, onLiveBar)
+  registerKrakenLiveRolloverStop(function () {
+    stopIntervalRollover()
+    removeViewListener()
+  })
+  scheduleIntervalRollover()
+
+  function formatTickPrice (price) {
+    const p = +price
+    if (!isFinite(p)) {
+      return '—'
+    }
+    return d3.format(',.2f')(p)
+  }
+
+  function formatTickAmount (amount) {
+    const v = +amount
+    if (!isFinite(v)) {
+      return '—'
+    }
+    return d3.format(',.3s')(v)
+  }
+
+  function updateLiveTick (bar) {
+    if (!bar) {
+      liveTick.textContent = '— · — · —'
+      return
+    }
+
+    const price = accessor.c(bar)
+    const volFrom = bar.volumefrom ?? bar.volume ?? 0
+    const volTo = bar.volumeto ?? (volFrom * (bar.vwap ?? price))
+    liveTick.textContent = [
+      formatTickPrice(price),
+      formatTickAmount(volFrom),
+      formatTickAmount(volTo)
+    ].join(' · ')
+  }
+
+  function flatBarAt (close, date) {
+    return {
+      date: date,
+      open: close,
+      high: close,
+      low: close,
+      close: close,
+      volumefrom: 0,
+      volumeto: 0,
+      volume: 0
+    }
+  }
+
+  function applyBar (bar, options) {
+    if (kraken.panning) {
+      return false
+    }
+
+    if (!options || options.flash !== false) {
+      flashLiveLed()
+    }
+
+    const barTime = accessor.d(bar).getTime()
+    const last = data[data.length - 1]
+    const lastTime = last ? accessor.d(last).getTime() : 0
+    const followLive = shouldFollowLive()
+    let replaced = false
+    let structureChanged = false
+
+    if (last && barTime === lastTime) {
+      data[data.length - 1] = bar
+      replaced = true
+    } else if (!last || barTime > lastTime) {
+      data.push(bar)
+      structureChanged = true
+      if (data.length > 720) {
+        data.shift()
+      }
+    } else {
+      return false
+    }
+
+    if (followLive) {
+      applyGlobalView(loadKrakenViewState())
+    } else if (structureChanged) {
+      updateYScalesForView(zoomableInit.domain()[0])
+    }
+
+    draw(replaced && !structureChanged ? 'refresh' : 'full')
+    updateLiveTick(bar)
+    return true
+  }
+
+  function stopIntervalRollover () {
+    if (rolloverTimer) {
+      clearTimeout(rolloverTimer)
+      rolloverTimer = null
+    }
+  }
+
+  function catchUpIntervalRollovers () {
+    if (kraken.panning) {
+      return
+    }
+
+    const now = Date.now()
+
+    while (data.length > 0) {
+      const last = data[data.length - 1]
+      const nextBegin = accessor.d(last).getTime() + intervalMs
+      if (nextBegin > now) {
+        break
+      }
+      if (!applyBar(flatBarAt(accessor.c(last), new Date(nextBegin)), { flash: false })) {
+        break
+      }
+    }
+  }
+
+  function scheduleIntervalRollover () {
+    stopIntervalRollover()
+    if (data.length === 0) {
+      return
+    }
+
+    catchUpIntervalRollovers()
+
+    const last = data[data.length - 1]
+    const nextBegin = accessor.d(last).getTime() + intervalMs
+    const delay = Math.max(50, nextBegin - Date.now() + 50)
+
+    rolloverTimer = setTimeout(function () {
+      rolloverTimer = null
+      catchUpIntervalRollovers()
+      scheduleIntervalRollover()
+    }, delay)
+  }
+
+  function flashLiveLed () {
+    liveLed.classList.remove('flash')
+    void liveLed.offsetWidth
+    liveLed.classList.add('flash')
+  }
+
+  function onLiveBar (bar) {
+    applyBar(bar)
+    scheduleIntervalRollover()
+  }
+
+  function configureXAxis () {
+    const zd = x.zoomable().domain()
+    const visibleBars = Math.max(1, zd[1] - zd[0])
+    xAxis
+      .ticks(axisTickCount(width))
+      .tickFormat(axisTimeFormat(interval, visibleBars))
+  }
+
+  function draw (mode) {
     try {
+      configureXAxis()
       svg.select('g.x.axis').call(xAxis)
-      svg.select('g.y.axis').call(yAxis)
-      svg.select('g.volume.axis').call(volumeAxis)
-      svg.select('g.percent.axis').call(percentAxis)
-      svg.select('g.candlestick').call(candlestick.refresh)
-      svg.select('g.volume').call(volume.refresh)
-      svg.select('g.sma.ma-0').call(sma0.refresh)
-      svg.select('g.sma.ma-1').call(sma1.refresh)
-      svg.select('g.ema.ma-2').call(ema2.refresh)
+
+      if (mode === 'pan') {
+        svg.select('g.ohlc').call(ohlc.refresh)
+        svg.select('g.volume').call(volume.refresh)
+        svg.select('g.sma.ma-0').call(sma0.refresh)
+        svg.select('g.sma.ma-1').call(sma1.refresh)
+        svg.select('g.ema.ma-2').call(ema2.refresh)
+      } else {
+        svg.select('g.y.axis').call(yAxis)
+        svg.select('g.volume.axis').call(volumeAxis)
+        svg.select('g.percent.axis').call(percentAxis)
+
+        if (mode === 'refresh') {
+          svg.select('g.ohlc').call(ohlc.refresh)
+          svg.select('g.volume').call(volume.refresh)
+          svg.select('g.sma.ma-0').call(sma0.refresh)
+          svg.select('g.sma.ma-1').call(sma1.refresh)
+          svg.select('g.ema.ma-2').call(ema2.refresh)
+        } else {
+          rebindPlots()
+        }
+      }
+
+      pane.raise()
     } catch (error) {
       console.log('draw() try => catch', error.message)
       return false
     }
   }
+
+  return v2Symbol
 }

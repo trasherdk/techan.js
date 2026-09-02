@@ -1,4 +1,6 @@
 function renderKrakenCharts () {
+  disconnectKrakenLive()
+
   const main = document.querySelector('main')
   main.innerHTML = ''
   document.title = 'Kraken: ' + params.crypto + '-' + params.currency
@@ -6,16 +8,31 @@ function renderKrakenCharts () {
   const divisor = Math.max(1, Math.floor(window.innerWidth / 500))
   const dim = dimension()
   const chartWidth = (window.innerWidth - (dim.margin.left + dim.margin.right)) / divisor
+  const interval = params.interval
+    ? Number(params.interval)
+    : resolveInterval(params.res, params.agg)
+
+  const promises = []
 
   params.crypto.split(',').forEach(function (ticker) {
     const symbol = ticker.trim()
     if (!symbol) {
       return
     }
-    chart(`chart-${symbol}`, symbol, params.currency, chartWidth, 350)
-      .catch(error => {
-        console.log('chart().catch', error.message)
-      })
+    promises.push(
+      chart(`chart-${symbol}`, symbol, params.currency, chartWidth, 350)
+        .catch(error => {
+          console.log('chart().catch', error.message)
+          return null
+        })
+    )
+  })
+
+  Promise.all(promises).then(function (symbols) {
+    const liveSymbols = symbols.filter(Boolean)
+    if (liveSymbols.length > 0) {
+      connectKrakenLive(liveSymbols, interval)
+    }
   })
 }
 
@@ -118,6 +135,7 @@ function readSettingsForm (form) {
     currency,
     res: form.elements.res.value,
     agg: form.elements.agg.value,
+    volumeSource: (form.querySelector('input[name="volumeSource"]:checked') || {}).value || kraken.defaults.volumeSource,
     api: form.elements.api.value.trim() || kraken.defaultApi
   }
 
@@ -140,6 +158,10 @@ function fillSettingsForm (form, current) {
   form.elements.cryptoExtra.value = extraSymbolsFromCrypto(current.crypto || '', currency)
   form.elements.res.value = current.res || kraken.defaults.res
   fillAggSelect(form.elements.agg, form.elements.res.value, current.agg || kraken.defaults.agg)
+  const volumeSource = resolveKrakenVolumeSource(current.volumeSource || kraken.defaults.volumeSource)
+  form.querySelectorAll('input[name="volumeSource"]').forEach(function (input) {
+    input.checked = input.value === volumeSource
+  })
   form.elements.interval.value = current.interval || ''
   form.elements.api.value = current.api || kraken.defaultApi
 }
@@ -153,7 +175,7 @@ function createKrakenSettingsDialog () {
     <form method="dialog" class="kraken-settings-form">
       <header class="kraken-settings-header">
         <h2>Chart setup</h2>
-        <p>Choose symbols, quote currency, and candle resolution.</p>
+        <p>Choose symbols, quote currency, and bar resolution.</p>
       </header>
 
       <fieldset>
@@ -184,6 +206,21 @@ function createKrakenSettingsDialog () {
           <select name="agg"></select>
         </label>
       </div>
+
+      <fieldset class="volume-source">
+        <legend>Volume source</legend>
+        <div class="choice-row">
+          <label class="choice-option">
+            <input type="radio" name="volumeSource" value="from" checked>
+            From (base)
+          </label>
+          <label class="choice-option">
+            <input type="radio" name="volumeSource" value="to">
+            To (quote)
+          </label>
+        </div>
+        <small>From = traded base asset. To = quote value (base × price).</small>
+      </fieldset>
 
       <details class="advanced">
         <summary>Advanced</summary>
@@ -246,7 +283,10 @@ function createKrakenSettingsDialog () {
 
 function openKrakenSettings () {
   let dialog = document.getElementById('kraken-settings')
-  if (!dialog) {
+  if (!dialog || !dialog.querySelector('input[name="volumeSource"]')) {
+    if (dialog) {
+      dialog.remove()
+    }
     dialog = createKrakenSettingsDialog()
   }
   fillSettingsForm(dialog.querySelector('form'), params)

@@ -1,3 +1,57 @@
+    .chart {
+        position: relative;
+        --live-tick-color: #000000e8;
+    }
+
+    .live-hud {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
+        gap: 5px;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .live-tick {
+        font-size: x-small;
+        font-family: sans-serif;
+        color: var(--live-tick-color);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        line-height: 1;
+    }
+
+    .live-led {
+        flex-shrink: 0;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #666;
+        border: 1px solid #444;
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    }
+
+    .live-led.flash {
+        animation: live-led-flash 0.35s ease-out;
+    }
+
+    @keyframes live-led-flash {
+        0% {
+            background: #39ff14;
+            border-color: #2ecc00;
+            box-shadow: 0 0 10px #39ff14, 0 0 4px #39ff14;
+        }
+
+        100% {
+            background: #666;
+            border-color: #444;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+        }
+    }
+
     body {
         font: 1rem sans-serif;
     }
@@ -10,22 +64,26 @@
         fill: #BBBBBB;
     }
 
-    path.candle {
+    path {
+        fill: none;
+        stroke-width: 1;
+    }
+
+    path.ohlc {
         stroke: #000000;
+        stroke-width: 1;
     }
 
-    path.candle.body {
-        stroke-width: 0;
+    path.ohlc.up {
+        stroke: hsl(120, 98%, 40%);
     }
 
-    path.candle.up {
-        fill: hsl(120, 98%, 50%);
-        stroke: #07f73b;
-    }
-
-    path.candle.down {
-        fill: #FF0000;
+    path.ohlc.down {
         stroke: #FF0000;
+    }
+
+    path.ohlc.equal {
+        stroke: #888888;
     }
 
     path.volume {
@@ -41,9 +99,22 @@
     }
 
     rect.pane {
-        cursor: move;
         fill: none;
         pointer-events: all;
+    }
+
+    rect.pane.pane-pan {
+        cursor: grab;
+    }
+
+    rect.pane.pane-pan:active {
+        cursor: grabbing;
+    }
+
+    .chart svg g.ohlc,
+    .chart svg g.volume,
+    .chart svg g.indicator {
+        pointer-events: none;
     }
 
     .indicator path.line {

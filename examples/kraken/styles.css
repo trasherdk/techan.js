@@ -148,6 +148,26 @@ footer center {
 	margin-bottom: 1rem;
 }
 
+.choice-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem 1.25rem;
+	margin-bottom: 0.35rem;
+}
+
+.choice-option {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	font-size: 0.95rem;
+	cursor: pointer;
+}
+
+.volume-source small {
+	color: #666;
+	font-size: 0.85rem;
+}
+
 .field {
 	display: flex;
 	flex-direction: column;
@@ -171,6 +191,16 @@ footer center {
 .field small {
 	color: #666;
 	font-size: 0.85rem;
+}
+
+.field-inline {
+	flex-direction: row;
+	align-items: center;
+}
+
+.field-inline input {
+	width: auto;
+	margin: 0;
 }
 
 .advanced {

@@ -2,15 +2,17 @@ const kraken = {
   defaultApi: 'api/ohlc.php',
   marketsApi: 'api/markets.php',
   storageKey: 'techan.kraken.params',
+  viewStorageKey: 'techan.kraken.view',
   marketsCacheKey: 'techan.kraken.markets',
   marketsCacheTtl: 60 * 60 * 1000,
-  paramKeys: ['crypto', 'currency', 'res', 'agg', 'api', 'interval', 'since'],
+  paramKeys: ['crypto', 'currency', 'res', 'agg', 'api', 'interval', 'since', 'volumeSource'],
   defaults: {
     crypto: 'XMR,BTC',
     currency: 'EUR',
     res: 'minute',
     agg: '1',
-    api: 'api/ohlc.php'
+    api: 'api/ohlc.php',
+    volumeSource: 'from'
   },
   intervals: [1, 5, 15, 30, 60, 240, 1440, 10080, 21600],
   // Common ticker aliases where wsname base differs from the usual symbol.
@@ -25,7 +27,13 @@ const kraken = {
   featuredSymbols: ['XBT', 'XMR', 'ETH', 'SOL', 'ADA', 'DOT', 'XRP', 'LTC', 'BCH', 'XLM', 'ZEC', 'XDG'],
   pairsByKey: null,
   pairsByWsname: null,
-  assetByAltname: null
+  assetByAltname: null,
+  viewState: null,
+  viewListeners: [],
+  panning: false,
+  panRafId: null,
+  panSyncDomain: null,
+  panSyncSource: null
 }
 
 function buildKrakenMarketIndexes (result) {
@@ -188,28 +196,71 @@ function resolveInterval (res, agg) {
 }
 
 function parseKrakenRows (rows) {
-  return rows.map((row) => ({
-    date: new Date(row[0] * 1000),
-    open: +row[1],
-    high: +row[2],
-    low: +row[3],
-    close: +row[4],
-    volume: +row[6]
-  }))
+  return rows.map((row) => {
+    const volumefrom = +row[6]
+    const vwap = +row[5]
+    const close = +row[4]
+    const volumeto = volumefrom * (vwap || close)
+    return {
+      date: new Date(row[0] * 1000),
+      open: +row[1],
+      high: +row[2],
+      low: +row[3],
+      close,
+      vwap,
+      volumefrom,
+      volumeto,
+      volume: volumefrom
+    }
+  })
 }
 
 function parseNormalizedRows (rows) {
-  return rows.map((row) => ({
-    date: new Date((row.time || row.timestamp) * (row.time > 1e12 ? 1 : 1000)),
-    open: +row.open,
-    high: +row.high,
-    low: +row.low,
-    close: +row.close,
-    volume: +(row.volume ?? 0)
-  }))
+  return rows.map((row) => {
+    const volumefrom = +(row.volumefrom ?? row.volume ?? 0)
+    const close = +row.close
+    const vwap = +(row.vwap ?? 0)
+    const volumeto = +(row.volumeto ?? (volumefrom * (vwap || close)))
+    return {
+      date: new Date((row.time || row.timestamp) * (row.time > 1e12 ? 1 : 1000)),
+      open: +row.open,
+      high: +row.high,
+      low: +row.low,
+      close,
+      vwap: vwap || undefined,
+      volumefrom,
+      volumeto,
+      volume: volumefrom
+    }
+  })
 }
 
-function axisTimeFormat (interval) {
+function resolveKrakenVolumeSource (value) {
+  return value === 'to' ? 'to' : 'from'
+}
+
+function krakenBarVolume (bar, source) {
+  source = resolveKrakenVolumeSource(source != null ? source : params.volumeSource)
+  if (source === 'to') {
+    if (bar.volumeto != null) {
+      return bar.volumeto
+    }
+    const base = bar.volumefrom ?? bar.volume ?? 0
+    const price = bar.vwap ?? bar.close ?? 0
+    return base * price
+  }
+  return bar.volumefrom ?? bar.volume ?? 0
+}
+
+function krakenVolumeAccessor (ohlcAccessor, source) {
+  source = resolveKrakenVolumeSource(source != null ? source : params.volumeSource)
+  const volumeFn = function (d) {
+    return krakenBarVolume(d, source)
+  }
+  return Object.assign(volumeFn, ohlcAccessor, { v: volumeFn })
+}
+
+function axisTimeFormat (interval, visibleBars) {
   const dateOnly = d3.timeFormat('%d %b')
   const dateShort = d3.timeFormat('%d/%m')
   const dateTime = d3.timeFormat('%d/%m %H:%M')
@@ -219,15 +270,22 @@ function axisTimeFormat (interval) {
     return dateOnly
   }
 
+  const bars = visibleBars || 720
+  const visibleMinutes = bars * interval
+
   return function (d) {
     if (d.getHours() === 0 && d.getMinutes() === 0) {
       return dateShort(d)
     }
-    if (interval >= 60 || interval * 720 > 24 * 60) {
+    if (interval >= 60 || visibleMinutes > 2 * 24 * 60) {
       return dateTime(d)
     }
     return timeOnly(d)
   }
+}
+
+function axisTickCount (plotWidth) {
+  return Math.max(4, Math.min(10, Math.floor(plotWidth / 85)))
 }
 
 async function fetchOhlc (pair, interval, options = {}) {
@@ -310,6 +368,118 @@ function clearKrakenParamsFromUrl () {
 
   const query = url.searchParams.toString()
   history.replaceState(null, '', url.pathname + (query ? `?${query}` : '') + url.hash)
+}
+
+function visibleBarCount (plotWidth) {
+  return Math.max(40, Math.min(720, Math.floor(plotWidth / 5)))
+}
+
+function defaultKrakenViewState () {
+  return {
+    rightMargin: null,
+    panOffset: 0,
+    viewSpan: null,
+    followLive: true
+  }
+}
+
+function savedKrakenRightMargin (state, fallback) {
+  state = state || loadKrakenViewState()
+  if (state.rightMargin != null) {
+    return state.rightMargin
+  }
+  if (state.endOffset != null) {
+    return state.endOffset
+  }
+  return fallback
+}
+
+function loadKrakenViewState () {
+  if (kraken.viewState) {
+    return kraken.viewState
+  }
+
+  try {
+    const raw = localStorage.getItem(kraken.viewStorageKey)
+    if (raw) {
+      kraken.viewState = Object.assign(defaultKrakenViewState(), JSON.parse(raw))
+      return kraken.viewState
+    }
+  } catch (error) {
+    console.log('loadKrakenViewState', error.message)
+  }
+
+  kraken.viewState = defaultKrakenViewState()
+  return kraken.viewState
+}
+
+function beginKrakenPan () {
+  kraken.panning = true
+}
+
+function endKrakenPan () {
+  kraken.panning = false
+  if (kraken.panRafId) {
+    cancelAnimationFrame(kraken.panRafId)
+    kraken.panRafId = null
+  }
+  kraken.panSyncDomain = null
+  kraken.panSyncSource = null
+  scheduleKrakenLiveDispatch()
+}
+
+function scheduleKrakenPanSync (domain, sourceId) {
+  kraken.panSyncDomain = domain
+  kraken.panSyncSource = sourceId
+  if (kraken.panRafId) {
+    return
+  }
+  kraken.panRafId = requestAnimationFrame(function () {
+    kraken.panRafId = null
+    const synced = kraken.panSyncDomain
+    const source = kraken.panSyncSource
+    kraken.panSyncDomain = null
+    kraken.panSyncSource = null
+    if (synced) {
+      notifyKrakenViewPan(synced, source)
+    }
+  })
+}
+
+function notifyKrakenViewPan (domain, sourceId) {
+  kraken.viewListeners.forEach(function (listener) {
+    listener(loadKrakenViewState(), { panDomain: domain, sourceId: sourceId })
+  })
+}
+
+function saveKrakenViewState (next, options) {
+  options = options || {}
+  kraken.viewState = Object.assign({}, loadKrakenViewState(), next)
+  if (options.persist !== false) {
+    try {
+      localStorage.setItem(kraken.viewStorageKey, JSON.stringify(kraken.viewState))
+    } catch (error) {
+      console.log('saveKrakenViewState', error.message)
+    }
+  }
+  if (options.notify !== false) {
+    kraken.viewListeners.forEach(function (listener) {
+      listener(kraken.viewState)
+    })
+  }
+}
+
+function registerKrakenViewListener (listener) {
+  kraken.viewListeners.push(listener)
+  return function () {
+    kraken.viewListeners = kraken.viewListeners.filter(function (item) {
+      return item !== listener
+    })
+  }
+}
+
+function unregisterKrakenViewListeners () {
+  kraken.viewListeners = []
 }
 
 function resolveKrakenParams () {
