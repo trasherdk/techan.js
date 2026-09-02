@@ -1,6 +1,6 @@
 html[data-theme="light"] {
 	--live-tick-color: #000000e8;
-	--chart-symbol: #bbbbbb;
+	--chart-symbol: #555555;
 	--chart-axis: #333333;
 	--chart-axis-line: #cccccc;
 	--ohlc-neutral: #000000;
@@ -15,11 +15,13 @@ html[data-theme="light"] {
 	--ma-2: #ff7f0e;
 	--live-led-bg: #666666;
 	--live-led-border: #444444;
+	--crosshair-wire: #cccccc;
+	--crosshair-annotation: #dddddd;
 }
 
 html[data-theme="dark"] {
 	--live-tick-color: #ffffffe8;
-	--chart-symbol: #777777;
+	--chart-symbol: #cccccc;
 	--chart-axis: #aaaaaa;
 	--chart-axis-line: #444444;
 	--ohlc-neutral: #cccccc;
@@ -34,6 +36,8 @@ html[data-theme="dark"] {
 	--ma-2: #ffb347;
 	--live-led-bg: #888888;
 	--live-led-border: #666666;
+	--crosshair-wire: #555555;
+	--crosshair-annotation: #666666;
 }
 
 .chart {
@@ -101,6 +105,12 @@ html[data-theme="dark"] {
 
 .chart text.symbol {
 	fill: var(--chart-symbol);
+	font-size: 10px;
+}
+
+.chart .crosshair .axisannotation text {
+	font-size: 10px;
+	fill: var(--chart-axis);
 }
 
 .chart path {
@@ -137,16 +147,26 @@ html[data-theme="dark"] {
 	fill: var(--volume-down);
 }
 
-.chart rect.pane {
+.chart .crosshair {
+	cursor: crosshair;
+}
+
+.chart .crosshair path.wire {
+	stroke: var(--crosshair-wire);
+	stroke-dasharray: 1, 1;
+}
+
+.chart .crosshair .axisannotation path {
+	fill: var(--crosshair-annotation);
+}
+
+.chart .crosshair rect.crosshair-pane {
 	fill: none;
 	pointer-events: all;
+	cursor: crosshair;
 }
 
-.chart rect.pane.pane-pan {
-	cursor: grab;
-}
-
-.chart rect.pane.pane-pan:active {
+.chart .crosshair rect.crosshair-pane.grabbing {
 	cursor: grabbing;
 }
 

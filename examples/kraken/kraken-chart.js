@@ -91,6 +91,41 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     .ticks(2)
     .tickFormat(d3.format(',.3s'))
 
+  const timeAnnotation = techan.plot.axisannotation()
+    .axis(xAxis)
+    .orient('bottom')
+    .format(d3.timeFormat('%d/%m %H:%M'))
+    .width(64)
+    .height(12)
+    .translate([0, height])
+
+  const ohlcAnnotation = techan.plot.axisannotation()
+    .axis(yAxis)
+    .orient('right')
+    .format(d3.format(',.2f'))
+    .width(44)
+    .height(12)
+    .translate([width, 0])
+
+  const percentAnnotation = techan.plot.axisannotation()
+    .axis(percentAxis)
+    .orient('left')
+    .width(40)
+    .height(12)
+
+  const volumeAnnotation = techan.plot.axisannotation()
+    .axis(volumeAxis)
+    .orient('right')
+    .width(32)
+    .height(12)
+
+  const ohlcCrosshair = techan.plot.crosshair()
+    .xScale(timeAnnotation.axis().scale())
+    .yScale(ohlcAnnotation.axis().scale())
+    .xAnnotation(timeAnnotation)
+    .yAnnotation([ohlcAnnotation, percentAnnotation, volumeAnnotation])
+    .verticalWireRange([0, height])
+
   let svg = d3.select(`#${name}`).append('svg')
     .attr('width', width + margin.left + margin.right)
     .attr('height', height + margin.top + margin.bottom)
@@ -142,10 +177,11 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   svg.append('g')
     .attr('class', 'volume axis')
 
-  const pane = svg.append('rect')
-    .attr('class', 'pane')
-    .attr('width', width)
-    .attr('height', height)
+  const crosshairG = svg.append('g')
+    .attr('class', 'crosshair')
+
+  let panSurface = null
+  let crosshairPlotNode = null
 
   let panStartDomain = null
   let panStartX = 0
@@ -154,11 +190,14 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
   const pan = d3.drag()
     .on('start', function () {
+      clearCrosshair()
       beginKrakenPan()
       stopIntervalRollover()
       panStartDomain = x.zoomable().domain().slice()
       panStartX = d3.event.x
-      pane.style('cursor', 'grabbing')
+      if (panSurface) {
+        panSurface.classed('grabbing', true)
+      }
     })
     .on('drag', function () {
       const span = panStartDomain[1] - panStartDomain[0]
@@ -173,14 +212,32 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     })
     .on('end', function () {
       endKrakenPan()
-      pane.style('cursor', 'grab')
+      if (panSurface) {
+        panSurface.classed('grabbing', false)
+      }
       applyXDomain(x.zoomable().domain(), loadKrakenViewState())
       draw('refresh')
       syncViewStateFromChart()
       scheduleIntervalRollover()
     })
 
-  pane.classed('pane-pan', true)
+  function clearCrosshair () {
+    if (crosshairPlotNode) {
+      delete crosshairPlotNode.__coord__
+      crosshairG.datum([]).call(ohlcCrosshair.refresh)
+    }
+  }
+
+  function initCrosshair () {
+    crosshairG.datum([]).call(ohlcCrosshair)
+    crosshairPlotNode = crosshairG.select('g.data.scope-crosshair').node()
+      || crosshairG.select('g.data').node()
+    panSurface = crosshairG.select('rect')
+    panSurface
+      .classed('crosshair-pane', true)
+      .call(pan)
+      .on('dblclick', resetToDefaultView)
+  }
 
   let retry = 3
   let data = []
@@ -215,8 +272,6 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
       .text(message)
     throw new Error(message)
   }
-
-  let indicatorPreRoll = interval < 60 ? 15 : 6
 
   data = data.sort((a, b) => d3.ascending(accessor.d(a), accessor.d(b)))
 
@@ -268,15 +323,24 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     x.domain(techan.scale.plot.time(data, accessor).domain())
     x.zoomable().domain(clamped)
     zoomableInit = x.zoomable().copy()
-    updateYScalesForView(clamped[0])
+    updateYScalesForView()
   }
 
-  function updateYScalesForView (viewStart) {
-    const sliceStart = Math.max(0, Math.floor(viewStart))
-    const visible = data.slice(sliceStart)
-    const ohlcSlice = visible.slice(Math.min(indicatorPreRoll, visible.length))
-    y.domain(techan.scale.plot.ohlc(ohlcSlice, accessor).domain())
-    yPercent.domain(techan.scale.plot.percent(y, accessor(data[Math.max(sliceStart, indicatorPreRoll)])).domain())
+  function visibleDataSlice () {
+    const domain = x.zoomable().domain()
+    const sliceStart = Math.max(0, Math.floor(domain[0]))
+    const sliceEnd = Math.min(data.length, Math.max(sliceStart + 1, Math.ceil(domain[1])))
+    return data.slice(sliceStart, sliceEnd)
+  }
+
+  function updateYScalesForView () {
+    const visible = visibleDataSlice()
+    if (visible.length === 0) {
+      return
+    }
+
+    y.domain(techan.scale.plot.ohlc(visible, accessor).domain())
+    yPercent.domain(techan.scale.plot.percent(y, accessor(visible[0])).domain())
     yVolume.domain(techan.scale.plot.volume(visible, volAccessor.v).domain())
     yInit = y.copy()
     yPercentInit = yPercent.copy()
@@ -345,13 +409,12 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     svg.select('g.sma.ma-0').datum(techan.indicator.sma().period(10)(data)).call(sma0)
     svg.select('g.sma.ma-1').datum(techan.indicator.sma().period(26)(data)).call(sma1)
     svg.select('g.ema.ma-2').datum(techan.indicator.ema().period(9)(data)).call(ema2)
-    pane.raise()
+    crosshairG.raise()
   }
 
   rebindPlots()
   applyGlobalView(loadKrakenViewState())
-  pane.call(pan)
-  pane.on('dblclick', resetToDefaultView)
+  initCrosshair()
   draw('refresh')
   if (data.length > 0) {
     updateLiveTick(data[data.length - 1])
@@ -459,7 +522,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     if (followLive) {
       applyGlobalView(loadKrakenViewState())
     } else if (structureChanged) {
-      updateYScalesForView(zoomableInit.domain()[0])
+      updateYScalesForView()
     }
 
     draw(replaced && !structureChanged ? 'refresh' : 'full')
@@ -526,9 +589,11 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   function configureXAxis () {
     const zd = x.zoomable().domain()
     const visibleBars = Math.max(1, zd[1] - zd[0])
+    const fmt = axisTimeFormat(interval, visibleBars)
     xAxis
       .ticks(axisTickCount(width))
-      .tickFormat(axisTimeFormat(interval, visibleBars))
+      .tickFormat(fmt)
+    timeAnnotation.format(fmt)
   }
 
   function draw (mode) {
@@ -558,7 +623,8 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
         }
       }
 
-      pane.raise()
+      crosshairG.call(ohlcCrosshair.refresh)
+      crosshairG.raise()
     } catch (error) {
       console.log('draw() try => catch', error.message)
       return false
