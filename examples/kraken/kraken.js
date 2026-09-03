@@ -253,6 +253,16 @@ function krakenBarVolume (bar, source) {
   return bar.volumefrom ?? bar.volume ?? 0
 }
 
+function krakenVolumeUnit (symbol, currency, source) {
+  source = resolveKrakenVolumeSource(source != null ? source : params.volumeSource)
+  const wsname = pairWsname(resolvePair(symbol, currency))
+  const parts = wsname.split('/')
+  if (source === 'to') {
+    return symbolLabel(parts[1] || currency)
+  }
+  return symbolLabel(parts[0] || symbol)
+}
+
 function krakenVolumeAccessor (ohlcAccessor, source) {
   source = resolveKrakenVolumeSource(source != null ? source : params.volumeSource)
   const volumeFn = function (d) {

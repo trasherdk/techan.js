@@ -1,7 +1,7 @@
 
 async function chart (name, symbol, currency, fullWidth, fullHeight) {
   const dim = dimension()
-  const margin = dim.margin || { top: 50, right: 75, bottom: 50, left: 75 }
+  const margin = dim.margin || { top: 35, right: 75, bottom: 50, left: 75 }
   const width = Math.floor(fullWidth - margin.left - margin.right)
   const height = Math.floor(fullHeight - margin.top - margin.bottom)
   const volumeHeight = fullHeight * 0.25
@@ -19,6 +19,21 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   chartEl.style.maxWidth = `${Math.floor(fullWidth)}px`
   chartEl.style.maxHeight = `${fullHeight}px`
 
+  const chartTitle = `${symbolLabel(wsname.split('/')[0])} (${wsname}, ${interval}m)`
+
+  const chartHeader = document.createElement('div')
+  chartHeader.className = 'chart-header'
+
+  const titleEl = document.createElement('span')
+  titleEl.className = 'chart-title'
+  titleEl.textContent = chartTitle
+  chartHeader.appendChild(titleEl)
+
+  const barInfo = document.createElement('span')
+  barInfo.className = 'chart-bar-info'
+  barInfo.textContent = '—'
+  chartHeader.appendChild(barInfo)
+
   const liveHud = document.createElement('div')
   liveHud.className = 'live-hud'
 
@@ -32,7 +47,8 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   liveLed.title = 'Live feed activity'
   liveHud.appendChild(liveLed)
 
-  chartEl.appendChild(liveHud)
+  chartHeader.appendChild(liveHud)
+  chartEl.appendChild(chartHeader)
 
   root.appendChild(chartEl)
 
@@ -138,11 +154,6 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     .attr('width', width)
     .attr('height', height)
 
-  svg.append('text')
-    .attr('class', 'symbol')
-    .attr('x', 5)
-    .text(`${symbolLabel(wsname.split('/')[0])} (${wsname}, ${interval}m)`)
-
   svg.append('g')
     .attr('class', 'volume')
     .attr('clip-path', `url(#clip-${name})`)
@@ -181,7 +192,6 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     .attr('class', 'crosshair')
 
   let panSurface = null
-  let crosshairPlotNode = null
 
   let panStartDomain = null
   let panStartX = 0
@@ -222,22 +232,75 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
       scheduleIntervalRollover()
     })
 
+  function crosshairNode () {
+    return crosshairG.select('g.data.scope-crosshair').node()
+      || crosshairG.select('g.data').node()
+  }
+
   function clearCrosshair () {
-    if (crosshairPlotNode) {
-      delete crosshairPlotNode.__coord__
+    const node = crosshairNode()
+    if (node) {
+      delete node.__coord__
       crosshairG.datum([]).call(ohlcCrosshair.refresh)
     }
+    updateBarInfo(null)
+  }
+
+  function barAtCrosshair () {
+    const node = crosshairNode()
+    if (!node) {
+      return null
+    }
+
+    const datum = d3.select(node).datum()
+    if (datum && datum.x != null) {
+      const t = datum.x instanceof Date ? datum.x.getTime() : new Date(datum.x).getTime()
+      for (let i = data.length - 1; i >= 0; i--) {
+        if (accessor.d(data[i]).getTime() === t) {
+          return data[i]
+        }
+      }
+    }
+
+    if (node.__coord__) {
+      const idx = Math.round(x.zoomable().invertToIndex(node.__coord__[0]))
+      if (idx >= 0 && idx < data.length) {
+        return data[idx]
+      }
+    }
+
+    return null
+  }
+
+  function updateBarInfo (bar) {
+    if (!bar) {
+      barInfo.textContent = '—'
+      return
+    }
+    const unit = krakenVolumeUnit(symbol, currency)
+    barInfo.textContent = `${formatTickAmount(krakenBarVolume(bar))} ${unit}`
   }
 
   function initCrosshair () {
     crosshairG.datum([]).call(ohlcCrosshair)
-    crosshairPlotNode = crosshairG.select('g.data.scope-crosshair').node()
-      || crosshairG.select('g.data').node()
     panSurface = crosshairG.select('rect')
     panSurface
       .classed('crosshair-pane', true)
       .call(pan)
       .on('dblclick', resetToDefaultView)
+      .on('mousemove.barinfo', function () {
+        updateBarInfo(barAtCrosshair())
+      })
+
+    ohlcCrosshair.on('enter', function () {
+      updateBarInfo(barAtCrosshair())
+    })
+    ohlcCrosshair.on('move', function () {
+      updateBarInfo(barAtCrosshair())
+    })
+    ohlcCrosshair.on('out', function () {
+      updateBarInfo(null)
+    })
   }
 
   let retry = 3
@@ -787,10 +850,10 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
           svg.select('g.ema.ma-2').call(ema2.refresh)
         } else {
           rebindPlots()
+          crosshairG.call(ohlcCrosshair.refresh)
         }
       }
 
-      crosshairG.call(ohlcCrosshair.refresh)
       crosshairG.raise()
     } catch (error) {
       console.log('draw() try => catch', error.message)
