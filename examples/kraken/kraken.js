@@ -282,6 +282,65 @@ function krakenVolumeUnit (symbol, currency, source) {
   return symbolLabel(parts[0] || symbol)
 }
 
+function formatKrakenAmountCompact (amount) {
+  const v = +amount
+  if (!isFinite(v)) {
+    return '—'
+  }
+  if (v === 0) {
+    return '0'
+  }
+  const abs = Math.abs(v)
+  if (abs >= 1e9) {
+    return d3.format('.2~r')(v / 1e9) + 'B'
+  }
+  if (abs >= 1e6) {
+    return d3.format('.2~r')(v / 1e6) + 'M'
+  }
+  if (abs >= 1e4) {
+    return d3.format('.2~r')(v / 1e3) + 'K'
+  }
+  if (abs >= 1000) {
+    return d3.format(',.2f')(v)
+  }
+  if (abs >= 1) {
+    return d3.format(',.3~r')(v)
+  }
+  if (abs >= 0.0001) {
+    return d3.format(',.4~r')(v)
+  }
+  const decimals = Math.min(10, -Math.floor(Math.log10(abs)) + 3)
+  return d3.format(`,.${decimals}~r`)(v)
+}
+
+function formatKrakenAmount (amount) {
+  const v = +amount
+  if (!isFinite(v)) {
+    return '—'
+  }
+  if (v === 0) {
+    return '0'
+  }
+  const abs = Math.abs(v)
+  if (abs >= 1e9) {
+    return d3.format('.3~r')(v / 1e9) + 'B'
+  }
+  if (abs >= 1e7) {
+    return d3.format('.3~r')(v / 1e6) + 'M'
+  }
+  if (abs >= 1000) {
+    return d3.format(',.2f')(v)
+  }
+  if (abs >= 1) {
+    return d3.format(',.3~r')(v)
+  }
+  if (abs >= 0.0001) {
+    return d3.format(',.4~r')(v)
+  }
+  const decimals = Math.min(10, -Math.floor(Math.log10(abs)) + 3)
+  return d3.format(`,.${decimals}~r`)(v)
+}
+
 function krakenVolumeAccessor (ohlcAccessor, source) {
   source = resolveKrakenVolumeSource(source != null ? source : params.volumeSource)
   const volumeFn = function (d) {

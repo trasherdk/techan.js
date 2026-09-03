@@ -108,7 +108,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
   let volumeAxis = d3.axisRight(yVolume)
     .ticks(2)
-    .tickFormat(d3.format(',.3s'))
+    .tickFormat(formatKrakenAmountCompact)
 
   const timeAnnotation = techan.plot.axisannotation()
     .axis(xAxis)
@@ -201,6 +201,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   let suppressViewSave = false
   let rolloverTimer = null
   let catchUpInFlight = false
+  let lastTradeTokens = 0
 
   const pan = d3.drag()
     .on('start', function () {
@@ -281,7 +282,15 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
       return
     }
     const unit = krakenVolumeUnit(symbol, currency)
-    barInfo.textContent = `${formatTickAmount(krakenBarVolume(bar))} ${unit}`
+    barInfo.textContent = `${formatKrakenAmount(krakenBarVolume(bar))} ${unit}`
+  }
+
+  function refreshBarInfoIfActive () {
+    const node = crosshairNode()
+    if (!node || node.__coord__ === undefined) {
+      return
+    }
+    updateBarInfo(barAtCrosshair())
   }
 
   function initCrosshair () {
@@ -400,6 +409,26 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     return data.slice(sliceStart, sliceEnd)
   }
 
+  function volumeScaleDomain (visible) {
+    if (visible.length === 0) {
+      return [0, 1]
+    }
+
+    const closed = visible.slice(0, -1)
+    const forming = volAccessor.v(visible[visible.length - 1])
+    let baseline = closed.length ? d3.max(closed, volAccessor.v) : 0
+
+    if (baseline === 0 && data.length > 1) {
+      baseline = d3.max(data.slice(0, -1), volAccessor.v) || 0
+    }
+
+    if (baseline > 0) {
+      return [0, Math.max(baseline * 1.15, forming)]
+    }
+
+    return [0, Math.max(forming * 1.15, 1e-12)]
+  }
+
   function updateYScalesForView () {
     const visible = visibleDataSlice()
     if (visible.length === 0) {
@@ -408,7 +437,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
     y.domain(techan.scale.plot.ohlc(visible, accessor).domain())
     yPercent.domain(techan.scale.plot.percent(y, accessor(visible[0])).domain())
-    yVolume.domain(techan.scale.plot.volume(visible, volAccessor.v).domain())
+    yVolume.domain(volumeScaleDomain(visible))
     yInit = y.copy()
     yPercentInit = yPercent.copy()
   }
@@ -523,27 +552,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   }
 
   function formatTickAmount (amount) {
-    const v = +amount
-    if (!isFinite(v)) {
-      return '—'
-    }
-    return d3.format(',.3s')(v)
-  }
-
-  function updateLiveTick (bar) {
-    if (!bar) {
-      liveTick.textContent = '— · — · —'
-      return
-    }
-
-    const price = accessor.c(bar)
-    const volFrom = bar.volumefrom ?? bar.volume ?? 0
-    const volTo = bar.volumeto ?? (volFrom * (bar.vwap ?? price))
-    liveTick.textContent = [
-      formatTickPrice(price),
-      formatTickAmount(volFrom),
-      formatTickAmount(volTo)
-    ].join(' · ')
+    return formatKrakenAmount(amount)
   }
 
   function isFlatBar (bar) {
@@ -673,6 +682,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
       }
       draw('full')
       updateLiveTick(data[data.length - 1])
+      refreshBarInfoIfActive()
     } catch (error) {
       console.log('catchUpFromApi', error.message)
     } finally {
@@ -700,11 +710,51 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     target.low = source.low
     target.close = source.close
     target.volumefrom = source.volumefrom
-    target.volumeto = source.volumeto
     target.volume = source.volume
     if (source.vwap != null) {
       target.vwap = source.vwap
     }
+    target.volumeto = source.volumeto != null
+      ? source.volumeto
+      : (target.volumefrom * (target.vwap ?? target.close))
+  }
+
+  function tradeTokenDelta (prev, next) {
+    return Math.max(0, barVolume(next) - barVolume(prev))
+  }
+
+  function recordLastTrade (prevBar, nextBar, isNewBar) {
+    if (isNewBar) {
+      lastTradeTokens = barVolume(nextBar)
+      return
+    }
+    const delta = tradeTokenDelta(prevBar, nextBar)
+    if (delta > 0) {
+      lastTradeTokens = delta
+    }
+  }
+
+  function updateLiveTick (bar) {
+    if (!bar) {
+      liveTick.textContent = '— · — · —'
+      liveTick.removeAttribute('title')
+      return
+    }
+
+    const price = accessor.c(bar)
+    const baseUnit = krakenVolumeUnit(symbol, currency, 'from')
+    const quoteUnit = krakenVolumeUnit(symbol, currency, 'to')
+    const parts = [formatTickPrice(price)]
+
+    if (lastTradeTokens > 0) {
+      parts.push(`${formatKrakenAmount(lastTradeTokens)} ${baseUnit}`)
+      parts.push(`${formatKrakenAmount(lastTradeTokens * price)} ${quoteUnit}`)
+    } else {
+      parts.push('—', '—')
+    }
+
+    liveTick.textContent = parts.join(' · ')
+    liveTick.title = 'Last trade · size (base) · size × price (quote)'
   }
 
   function refreshIndicators () {
@@ -713,13 +763,21 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     svg.select('g.ema.ma-2').datum(techan.indicator.ema().period(9)(data)).call(ema2.refresh)
   }
 
+  function barVolume (bar) {
+    return bar.volumefrom ?? bar.volume ?? 0
+  }
+
+  function liveBarChanged (prev, next) {
+    return prev.open !== next.open ||
+      prev.high !== next.high ||
+      prev.low !== next.low ||
+      prev.close !== next.close ||
+      barVolume(prev) !== barVolume(next)
+  }
+
   function applyBar (bar, options) {
     if (kraken.panning) {
       return false
-    }
-
-    if (!options || options.flash !== false) {
-      flashLiveLed()
     }
 
     const barTime = accessor.d(bar).getTime()
@@ -730,9 +788,14 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     let structureChanged = false
 
     if (last && barTime === lastTime) {
+      if (!liveBarChanged(last, bar)) {
+        return false
+      }
+      recordLastTrade(last, bar, false)
       mergeBar(last, bar)
       replaced = true
     } else if (!last || barTime > lastTime) {
+      recordLastTrade(last, bar, true)
       data.push(bar)
       structureChanged = true
       if (data.length > 720) {
@@ -740,6 +803,10 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
       }
     } else {
       return false
+    }
+
+    if ((!options || options.flash !== false) && (structureChanged || replaced)) {
+      flashLiveLed()
     }
 
     if (followLive) {
@@ -755,6 +822,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
       draw('full')
     }
     updateLiveTick(last && barTime === lastTime ? last : bar)
+    refreshBarInfoIfActive()
     return true
   }
 
@@ -861,6 +929,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
         svg.select('g.percent.axis').call(percentAxis)
 
         if (mode === 'refresh') {
+          svg.select('g.volume.axis').call(volumeAxis)
           svg.select('g.ohlc').call(ohlc.refresh)
           svg.select('g.volume').call(volume.refresh)
           svg.select('g.sma.ma-0').call(sma0.refresh)
