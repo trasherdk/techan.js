@@ -1,4 +1,4 @@
-function renderKrakenCharts () {
+function renderKrakenCharts() {
   disconnectKrakenLive()
 
   const main = document.querySelector('main')
@@ -36,7 +36,7 @@ function renderKrakenCharts () {
   })
 }
 
-function applyKrakenParams (nextParams) {
+function applyKrakenParams(nextParams) {
   params = Object.assign({}, kraken.defaults, pickKrakenParams(nextParams))
   params.api = params.api || kraken.defaultApi
   saveKrakenParams(params)
@@ -44,8 +44,12 @@ function applyKrakenParams (nextParams) {
   renderKrakenCharts()
 }
 
-function aggOptionsForRes (res) {
+function aggOptionsForRes(res) {
   switch (res) {
+    case 'week':
+      return [{ value: '1', label: '1 week (10080m)' }]
+    case 'month':
+      return [{ value: '1', label: '15 days (21600m)' }]
     case 'hour':
       return [
         { value: '1', label: '1 hour (60m)' },
@@ -65,7 +69,7 @@ function aggOptionsForRes (res) {
   }
 }
 
-function fillAggSelect (select, res, selected) {
+function fillAggSelect(select, res, selected) {
   select.innerHTML = ''
   aggOptionsForRes(res).forEach(function (option) {
     const el = document.createElement('option')
@@ -78,7 +82,7 @@ function fillAggSelect (select, res, selected) {
   }
 }
 
-function fillCurrencySelect (select, selected) {
+function fillCurrencySelect(select, selected) {
   const preferred = ['EUR', 'USD', 'GBP', 'CAD', 'JPY', 'AUD']
   const available = quoteCurrencies()
   const ordered = preferred.filter((code) => available.includes(code))
@@ -94,7 +98,7 @@ function fillCurrencySelect (select, selected) {
   }
 }
 
-function fillSymbolGrid (grid, currency, selectedSymbols) {
+function fillSymbolGrid(grid, currency, selectedSymbols) {
   const symbols = featuredSymbolsForCurrency(currency)
   grid.innerHTML = symbols.map(function (symbol) {
     const label = symbolLabel(symbol)
@@ -104,7 +108,7 @@ function fillSymbolGrid (grid, currency, selectedSymbols) {
   }).join('')
 }
 
-function selectedSymbolsFromCrypto (crypto, currency) {
+function selectedSymbolsFromCrypto(crypto, currency) {
   const selected = new Set()
   crypto.split(',').map((symbol) => symbol.trim()).filter(Boolean).forEach(function (symbol) {
     selected.add(normalizeSymbolForSelection(symbol, currency))
@@ -112,7 +116,7 @@ function selectedSymbolsFromCrypto (crypto, currency) {
   return selected
 }
 
-function extraSymbolsFromCrypto (crypto, currency) {
+function extraSymbolsFromCrypto(crypto, currency) {
   const selected = selectedSymbolsFromCrypto(crypto, currency)
   return crypto.split(',')
     .map((symbol) => symbol.trim().toUpperCase())
@@ -120,7 +124,7 @@ function extraSymbolsFromCrypto (crypto, currency) {
     .join(', ')
 }
 
-function readSettingsForm (form) {
+function readSettingsForm(form) {
   const currency = form.elements.currency.value
   const checked = [...form.querySelectorAll('input[name="symbol"]:checked')]
     .map((input) => input.value)
@@ -147,7 +151,7 @@ function readSettingsForm (form) {
   return next
 }
 
-function fillSettingsForm (form, current) {
+function fillSettingsForm(form, current) {
   const currency = current.currency || kraken.defaults.currency
   fillCurrencySelect(form.elements.currency, currency)
   fillSymbolGrid(
@@ -166,7 +170,7 @@ function fillSettingsForm (form, current) {
   form.elements.api.value = current.api || kraken.defaultApi
 }
 
-function createKrakenSettingsDialog () {
+function createKrakenSettingsDialog() {
   const dialog = document.createElement('dialog')
   dialog.id = 'kraken-settings'
   dialog.className = 'kraken-settings'
@@ -199,6 +203,8 @@ function createKrakenSettingsDialog () {
             <option value="minute">Minute</option>
             <option value="hour">Hour</option>
             <option value="day">Day</option>
+            <option value="week">Week</option>
+            <option value="month">15 days</option>
           </select>
         </label>
         <label class="field">
@@ -281,7 +287,7 @@ function createKrakenSettingsDialog () {
   return dialog
 }
 
-function openKrakenSettings () {
+function openKrakenSettings() {
   let dialog = document.getElementById('kraken-settings')
   if (!dialog || !dialog.querySelector('input[name="volumeSource"]')) {
     if (dialog) {
@@ -293,19 +299,19 @@ function openKrakenSettings () {
   dialog.showModal()
 }
 
-function initKrakenSettings () {
+function initKrakenSettings() {
   const openButton = document.getElementById('kraken-settings-open')
   if (openButton) {
     openButton.addEventListener('click', openKrakenSettings)
   }
 }
 
-function showKrakenLoadError (message) {
+function showKrakenLoadError(message) {
   const main = document.querySelector('main')
   main.innerHTML = `<p class="load-error">${message}</p>`
 }
 
-async function bootstrapKrakenPage () {
+async function bootstrapKrakenPage() {
   params = resolveKrakenParams()
 
   try {

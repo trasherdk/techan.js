@@ -183,6 +183,10 @@ function isKnownKrakenSymbol (symbol, currency) {
 function resolveInterval (res, agg) {
   const multiplier = Number(agg) || 1
   switch (res) {
+    case 'week':
+      return 10080
+    case 'month':
+      return 21600
     case 'hour':
       return multiplier === 4 ? 240 : 60
     case 'day':
@@ -193,6 +197,21 @@ function resolveInterval (res, agg) {
         return multiplier
       }
       return 1
+  }
+}
+
+function formatKrakenInterval (interval) {
+  switch (Number(interval)) {
+    case 1: return '1m'
+    case 5: return '5m'
+    case 15: return '15m'
+    case 30: return '30m'
+    case 60: return '1h'
+    case 240: return '4h'
+    case 1440: return '1d'
+    case 10080: return '1w'
+    case 21600: return '15d'
+    default: return `${interval}m`
   }
 }
 

@@ -19,7 +19,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   chartEl.style.maxWidth = `${Math.floor(fullWidth)}px`
   chartEl.style.maxHeight = `${fullHeight}px`
 
-  const chartTitle = `${symbolLabel(wsname.split('/')[0])} (${wsname}, ${interval}m)`
+  const chartTitle = `${symbolLabel(wsname.split('/')[0])} (${wsname}, ${formatKrakenInterval(interval)})`
 
   const chartHeader = document.createElement('div')
   chartHeader.className = 'chart-header'
