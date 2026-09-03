@@ -930,8 +930,8 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
         if (mode === 'refresh') {
           svg.select('g.volume.axis').call(volumeAxis)
-          svg.select('g.ohlc').call(ohlc.refresh)
-          svg.select('g.volume').call(volume.refresh)
+          svg.select('g.ohlc').datum(data).call(ohlc)
+          svg.select('g.volume').datum(data).call(volume)
           svg.select('g.sma.ma-0').call(sma0.refresh)
           svg.select('g.sma.ma-1').call(sma1.refresh)
           svg.select('g.ema.ma-2').call(ema2.refresh)
