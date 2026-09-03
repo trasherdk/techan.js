@@ -2,6 +2,7 @@ const krakenLive = {
   wsUrl: 'wss://ws.kraken.com/v2',
   ws: null,
   handlers: {},
+  catchUpHandlers: {},
   rolloverStops: [],
   symbols: [],
   interval: null,
@@ -11,7 +12,10 @@ const krakenLive = {
   maxReconnectDelay: 30000,
   intentionalClose: false,
   rafId: null,
-  pending: {}
+  pending: {},
+  catchUpTimer: null,
+  visibilityListenerAdded: false,
+  hadOpenConnection: false
 }
 
 function wsV2Symbol (wsname) {
@@ -54,6 +58,47 @@ function registerKrakenLiveHandler (symbol, handler) {
 function unregisterKrakenLiveHandler (symbol) {
   delete krakenLive.handlers[symbol]
   delete krakenLive.pending[symbol]
+}
+
+function registerKrakenCatchUpHandler (symbol, handler) {
+  krakenLive.catchUpHandlers[symbol] = handler
+}
+
+function unregisterKrakenCatchUpHandler (symbol) {
+  delete krakenLive.catchUpHandlers[symbol]
+}
+
+function triggerKrakenCatchUp () {
+  if (krakenLive.catchUpTimer) {
+    return
+  }
+  krakenLive.catchUpTimer = setTimeout(function () {
+    krakenLive.catchUpTimer = null
+    Object.values(krakenLive.catchUpHandlers).forEach(function (handler) {
+      handler()
+    })
+  }, 50)
+}
+
+function ensureKrakenVisibilityListener () {
+  if (krakenLive.visibilityListenerAdded) {
+    return
+  }
+  krakenLive.visibilityListenerAdded = true
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') {
+      return
+    }
+    triggerKrakenCatchUp()
+    if (krakenLive.symbols.length === 0) {
+      return
+    }
+    if (!krakenLive.ws || krakenLive.ws.readyState !== WebSocket.OPEN) {
+      krakenLive.intentionalClose = false
+      openKrakenLiveSocket()
+    }
+  })
 }
 
 function scheduleKrakenLiveDispatch () {
@@ -164,6 +209,10 @@ function openKrakenLiveSocket () {
     krakenLive.reconnectDelay = 1000
     sendKrakenLiveSubscribe()
     startKrakenLivePing()
+    if (krakenLive.hadOpenConnection) {
+      triggerKrakenCatchUp()
+    }
+    krakenLive.hadOpenConnection = true
   })
 
   krakenLive.ws.addEventListener('message', handleKrakenLiveMessage)
@@ -185,6 +234,7 @@ function connectKrakenLive (symbols, interval) {
   krakenLive.symbols = [...new Set(symbols)]
   krakenLive.interval = interval
   krakenLive.intentionalClose = false
+  ensureKrakenVisibilityListener()
 
   if (krakenLive.symbols.length === 0) {
     return
@@ -214,8 +264,14 @@ function disconnectKrakenLive () {
     krakenLive.rafId = null
   }
 
+  if (krakenLive.catchUpTimer) {
+    clearTimeout(krakenLive.catchUpTimer)
+    krakenLive.catchUpTimer = null
+  }
+
   krakenLive.pending = {}
   krakenLive.handlers = {}
+  krakenLive.catchUpHandlers = {}
   unregisterKrakenLiveRolloverStops()
   krakenLive.symbols = []
   krakenLive.interval = null

@@ -187,6 +187,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   let panStartX = 0
   let suppressViewSave = false
   let rolloverTimer = null
+  let catchUpInFlight = false
 
   const pan = d3.drag()
     .on('start', function () {
@@ -439,8 +440,10 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   const intervalMs = interval * 60 * 1000
 
   registerKrakenLiveHandler(v2Symbol, onLiveBar)
+  registerKrakenCatchUpHandler(v2Symbol, catchUpFromApi)
   registerKrakenLiveRolloverStop(function () {
     stopIntervalRollover()
+    unregisterKrakenCatchUpHandler(v2Symbol)
     removeViewListener()
   })
   scheduleIntervalRollover()
@@ -475,6 +478,141 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
       formatTickAmount(volFrom),
       formatTickAmount(volTo)
     ].join(' · ')
+  }
+
+  function isFlatBar (bar) {
+    const vol = bar.volumefrom ?? bar.volume ?? 0
+    return vol === 0 &&
+      bar.open === bar.high &&
+      bar.high === bar.low &&
+      bar.low === bar.close
+  }
+
+  function trimTrailingFlatBars () {
+    while (data.length > 1 && isFlatBar(data[data.length - 1])) {
+      data.pop()
+    }
+  }
+
+  function findSyntheticGapStart () {
+    for (let i = 0; i < data.length - 1; i++) {
+      if (!isFlatBar(data[i])) {
+        continue
+      }
+      let j = i + 1
+      while (j < data.length && isFlatBar(data[j])) {
+        j++
+      }
+      if (j - i >= 2) {
+        return i
+      }
+      i = j - 1
+    }
+    return -1
+  }
+
+  function needsHistoryCatchUp () {
+    if (findSyntheticGapStart() >= 0) {
+      return true
+    }
+    const last = data[data.length - 1]
+    const nextBegin = accessor.d(last).getTime() + intervalMs
+    return nextBegin <= Date.now() - intervalMs
+  }
+
+  function mergeHistoryBars (fetched) {
+    fetched.sort(function (a, b) {
+      return d3.ascending(accessor.d(a), accessor.d(b))
+    })
+
+    fetched.forEach(function (bar) {
+      const barTime = accessor.d(bar).getTime()
+      let idx = -1
+
+      for (let i = data.length - 1; i >= 0; i--) {
+        const time = accessor.d(data[i]).getTime()
+        if (time === barTime) {
+          idx = i
+          break
+        }
+        if (time < barTime) {
+          break
+        }
+      }
+
+      if (idx >= 0) {
+        mergeBar(data[idx], bar)
+        return
+      }
+
+      let insertAt = 0
+      for (let i = data.length - 1; i >= 0; i--) {
+        if (accessor.d(data[i]).getTime() < barTime) {
+          insertAt = i + 1
+          break
+        }
+      }
+      data.splice(insertAt, 0, bar)
+    })
+
+    while (data.length > 720) {
+      data.shift()
+    }
+  }
+
+  async function catchUpFromApi () {
+    if (catchUpInFlight || kraken.panning || data.length === 0) {
+      return
+    }
+    if (!needsHistoryCatchUp()) {
+      return
+    }
+
+    catchUpInFlight = true
+    stopIntervalRollover()
+
+    try {
+      const gapStart = findSyntheticGapStart()
+      let anchorIdx
+
+      if (gapStart >= 0) {
+        anchorIdx = Math.max(0, gapStart - 1)
+        data.splice(gapStart)
+      } else {
+        trimTrailingFlatBars()
+        anchorIdx = data.length - 1
+      }
+
+      const anchor = data[anchorIdx]
+      if (!anchor) {
+        return
+      }
+
+      const since = Math.floor(accessor.d(anchor).getTime() / 1000)
+      const fetched = await fetchOhlc(pair, interval, {
+        api: params.api,
+        since: since
+      })
+
+      if (!fetched || fetched.length === 0) {
+        return
+      }
+
+      mergeHistoryBars(fetched)
+
+      if (shouldFollowLive()) {
+        applyGlobalView(loadKrakenViewState())
+      } else {
+        updateYScalesForView()
+      }
+      draw('full')
+      updateLiveTick(data[data.length - 1])
+    } catch (error) {
+      console.log('catchUpFromApi', error.message)
+    } finally {
+      catchUpInFlight = false
+      scheduleIntervalRollover()
+    }
   }
 
   function flatBarAt (close, date) {
@@ -562,21 +700,26 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   }
 
   function catchUpIntervalRollovers () {
-    if (kraken.panning) {
+    if (kraken.panning || catchUpInFlight) {
       return
     }
 
     const now = Date.now()
+    const last = data[data.length - 1]
+    const nextBegin = accessor.d(last).getTime() + intervalMs
 
-    while (data.length > 0) {
-      const last = data[data.length - 1]
-      const nextBegin = accessor.d(last).getTime() + intervalMs
-      if (nextBegin > now) {
-        break
-      }
-      if (!applyBar(flatBarAt(accessor.c(last), new Date(nextBegin)), { flash: false })) {
-        break
-      }
+    if (nextBegin > now) {
+      return
+    }
+
+    const missed = Math.floor((now - nextBegin) / intervalMs) + 1
+    if (missed >= 2) {
+      catchUpFromApi()
+      return
+    }
+
+    if (!applyBar(flatBarAt(accessor.c(last), new Date(nextBegin)), { flash: false })) {
+      catchUpFromApi()
     }
   }
 
