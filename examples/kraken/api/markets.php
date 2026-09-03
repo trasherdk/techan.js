@@ -1,7 +1,10 @@
 <?php
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Cache-Control: public, max-age=3600');
+require __DIR__ . '/bootstrap.php';
+
+krakenApiSendCors();
+krakenApiRequireGet();
+krakenApiRateLimit('markets', 20, 60);
+krakenApiJsonHeaders(3600);
 
 $cacheFile = sys_get_temp_dir() . '/techanjs-kraken-markets.json';
 $maxAge = 3600;
@@ -11,17 +14,10 @@ if (file_exists($cacheFile) && (time() - filemtime($cacheFile)) < $maxAge) {
 	exit;
 }
 
-$context = stream_context_create([
-	'http' => [
-		'timeout' => 20,
-		'header' => "User-Agent: techanjs-kraken/1.0\r\n",
-	],
-]);
+$pairsResponse = krakenApiFetch('https://api.kraken.com/0/public/AssetPairs', 20);
+$assetsResponse = krakenApiFetch('https://api.kraken.com/0/public/Assets', 20);
 
-$pairsResponse = @file_get_contents('https://api.kraken.com/0/public/AssetPairs', false, $context);
-$assetsResponse = @file_get_contents('https://api.kraken.com/0/public/Assets', false, $context);
-
-if ($pairsResponse === false || $assetsResponse === false) {
+if ($pairsResponse === '' || $assetsResponse === '') {
 	http_response_code(502);
 	echo json_encode(['error' => ['Kraken API request failed'], 'result' => null]);
 	exit;
@@ -53,5 +49,11 @@ $output = json_encode([
 	],
 ]);
 
-file_put_contents($cacheFile, $output);
+if ($output === false || strlen($output) > 5000000) {
+	http_response_code(502);
+	echo json_encode(['error' => ['Invalid Kraken API response'], 'result' => null]);
+	exit;
+}
+
+file_put_contents($cacheFile, $output, LOCK_EX);
 echo $output;

@@ -118,7 +118,8 @@ html[data-theme="dark"] {
 	}
 }
 
-.chart .axis text {
+.chart .axis text,
+.chart .x.axis text {
 	font-size: 10px;
 	fill: var(--chart-axis);
 }

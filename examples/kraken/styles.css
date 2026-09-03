@@ -156,9 +156,15 @@ main {
 }
 
 .chart {
-  display: block;
-  background-color: var(--chart-bg);
-  border: 1px solid var(--chart-border);
+	display: block;
+	background-color: var(--chart-bg);
+	border: 1px solid var(--chart-border);
+	overflow: visible;
+}
+
+.chart svg {
+	display: block;
+	overflow: visible;
 }
 
 footer {

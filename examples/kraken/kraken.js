@@ -291,27 +291,32 @@ function krakenVolumeAccessor (ohlcAccessor, source) {
 }
 
 function axisTimeFormat (interval, visibleBars) {
-  const dateOnly = d3.timeFormat('%d %b')
-  const dateShort = d3.timeFormat('%d/%m')
-  const dateTime = d3.timeFormat('%d/%m %H:%M')
-  const timeOnly = d3.timeFormat('%H:%M')
-
-  if (interval >= 1440) {
-    return dateOnly
-  }
-
   const bars = visibleBars || 720
-  const visibleMinutes = bars * interval
+  const visibleDays = (bars * interval) / 1440
 
-  return function (d) {
-    if (d.getHours() === 0 && d.getMinutes() === 0) {
-      return dateShort(d)
-    }
-    if (interval >= 60 || visibleMinutes > 2 * 24 * 60) {
-      return dateTime(d)
-    }
-    return timeOnly(d)
+  if (interval >= 1440 || visibleDays > 10) {
+    return d3.timeFormat('%d %b')
   }
+  if (interval >= 60 || visibleDays > 1.5) {
+    return d3.timeFormat('%d/%m')
+  }
+  if (interval >= 15 || visibleDays > 0.5) {
+    return d3.timeFormat('%d/%m %H:%M')
+  }
+  return d3.timeFormat('%H:%M')
+}
+
+function formatCrosshairTime (interval, visibleBars) {
+  const bars = visibleBars || 720
+  const visibleDays = (bars * interval) / 1440
+
+  if (interval >= 1440 || visibleDays > 10) {
+    return d3.timeFormat('%d %b %Y')
+  }
+  if (interval >= 60 || visibleDays > 1.5) {
+    return d3.timeFormat('%d/%m %H:%M')
+  }
+  return d3.timeFormat('%d/%m %H:%M')
 }
 
 function axisTickCount (plotWidth) {

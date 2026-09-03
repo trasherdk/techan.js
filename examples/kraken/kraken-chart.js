@@ -1,10 +1,12 @@
 
 async function chart (name, symbol, currency, fullWidth, fullHeight) {
   const dim = dimension()
-  const margin = dim.margin || { top: 35, right: 75, bottom: 50, left: 75 }
+  const headerHeight = 22
+  const frameHeight = Math.max(180, fullHeight - headerHeight)
+  const margin = dim.margin || { top: 20, right: 75, bottom: 60, left: 75 }
   const width = Math.floor(fullWidth - margin.left - margin.right)
-  const height = Math.floor(fullHeight - margin.top - margin.bottom)
-  const volumeHeight = fullHeight * 0.25
+  const height = Math.floor(frameHeight - margin.top - margin.bottom)
+  const volumeHeight = frameHeight * 0.25
   const pair = resolvePair(symbol, currency)
   const wsname = pairWsname(pair)
   const interval = params.interval
@@ -17,7 +19,8 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   chartEl.setAttribute('id', name)
   chartEl.setAttribute('class', 'chart')
   chartEl.style.maxWidth = `${Math.floor(fullWidth)}px`
-  chartEl.style.maxHeight = `${fullHeight}px`
+  chartEl.style.height = `${fullHeight}px`
+  chartEl.style.overflow = 'visible'
 
   const chartTitle = `${symbolLabel(wsname.split('/')[0])} (${wsname}, ${formatKrakenInterval(interval)})`
 
@@ -111,7 +114,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     .axis(xAxis)
     .orient('bottom')
     .format(d3.timeFormat('%d/%m %H:%M'))
-    .width(64)
+    .width(72)
     .height(12)
     .translate([0, height])
 
@@ -819,17 +822,32 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   function configureXAxis () {
     const zd = x.zoomable().domain()
     const visibleBars = Math.max(1, zd[1] - zd[0])
+    const tickCount = axisTickCount(width)
+    x.ticks(tickCount)
     const fmt = axisTimeFormat(interval, visibleBars)
+    const crosshairFmt = formatCrosshairTime(interval, visibleBars)
     xAxis
-      .ticks(axisTickCount(width))
+      .ticks(tickCount)
       .tickFormat(fmt)
-    timeAnnotation.format(fmt)
+    timeAnnotation.format(crosshairFmt)
+  }
+
+  function renderXAxis () {
+    const ticks = svg.select('g.x.axis')
+    ticks.call(xAxis)
+    const tickTexts = ticks.selectAll('.tick text')
+    tickTexts.attr('text-anchor', 'middle')
+    const nodes = tickTexts.nodes()
+    if (nodes.length > 0) {
+      d3.select(nodes[0]).attr('text-anchor', 'start')
+      d3.select(nodes[nodes.length - 1]).attr('text-anchor', 'end')
+    }
   }
 
   function draw (mode) {
     try {
       configureXAxis()
-      svg.select('g.x.axis').call(xAxis)
+      renderXAxis()
 
       if (mode === 'pan') {
         svg.select('g.ohlc').call(ohlc.refresh)
