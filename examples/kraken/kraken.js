@@ -215,6 +215,39 @@ function formatKrakenInterval (interval) {
   }
 }
 
+function formatIntervalRemaining (ms, intervalMinutes) {
+  const totalSec = Math.max(0, Math.ceil(ms / 1000))
+  if (totalSec === 0) {
+    return '0:00'
+  }
+
+  const interval = Number(intervalMinutes) || 1
+  if (interval >= 1440) {
+    const days = Math.floor(totalSec / 86400)
+    const hours = Math.floor((totalSec % 86400) / 3600)
+    const mins = Math.floor((totalSec % 3600) / 60)
+    if (days > 0) {
+      return `${days}d ${hours}h ${mins}m`
+    }
+    if (hours > 0) {
+      return `${hours}h ${mins}m`
+    }
+    return `${mins}m`
+  }
+
+  const hours = Math.floor(totalSec / 3600)
+  const mins = Math.floor((totalSec % 3600) / 60)
+  const secs = totalSec % 60
+  const pad = function (n) {
+    return n < 10 ? `0${n}` : `${n}`
+  }
+
+  if (hours > 0) {
+    return `${hours}:${pad(mins)}:${pad(secs)}`
+  }
+  return `${mins}:${pad(secs)}`
+}
+
 function parseKrakenRows (rows) {
   return rows.map((row) => {
     const volumefrom = +row[6]

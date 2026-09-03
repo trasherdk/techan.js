@@ -53,6 +53,12 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   chartHeader.appendChild(liveHud)
   chartEl.appendChild(chartHeader)
 
+  const intervalRemaining = document.createElement('span')
+  intervalRemaining.className = 'interval-remaining'
+  intervalRemaining.textContent = '—'
+  intervalRemaining.title = 'Time remaining in current candle'
+  chartEl.appendChild(intervalRemaining)
+
   root.appendChild(chartEl)
 
   await d3.json('https://cdn.jsdelivr.net/npm/d3-time-format@3/locale/da-DK.json').then(locale => {
@@ -200,6 +206,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   let panStartX = 0
   let suppressViewSave = false
   let rolloverTimer = null
+  let countdownTimer = null
   let catchUpInFlight = false
   let lastTradeTokens = 0
 
@@ -538,10 +545,12 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   registerKrakenCatchUpHandler(v2Symbol, catchUpFromApi)
   registerKrakenLiveRolloverStop(function () {
     stopIntervalRollover()
+    stopIntervalCountdown()
     unregisterKrakenCatchUpHandler(v2Symbol)
     removeViewListener()
   })
   scheduleIntervalRollover()
+  startIntervalCountdown()
 
   function formatTickPrice (price) {
     const p = +price
@@ -823,6 +832,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     }
     updateLiveTick(last && barTime === lastTime ? last : bar)
     refreshBarInfoIfActive()
+    updateIntervalRemaining()
     return true
   }
 
@@ -830,6 +840,32 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     if (rolloverTimer) {
       clearTimeout(rolloverTimer)
       rolloverTimer = null
+    }
+  }
+
+  function intervalRemainingMs () {
+    const last = data[data.length - 1]
+    if (!last) {
+      return 0
+    }
+    const nextBegin = accessor.d(last).getTime() + intervalMs
+    return Math.max(0, nextBegin - Date.now())
+  }
+
+  function updateIntervalRemaining () {
+    intervalRemaining.textContent = formatIntervalRemaining(intervalRemainingMs(), interval)
+  }
+
+  function startIntervalCountdown () {
+    stopIntervalCountdown()
+    updateIntervalRemaining()
+    countdownTimer = setInterval(updateIntervalRemaining, 1000)
+  }
+
+  function stopIntervalCountdown () {
+    if (countdownTimer) {
+      clearInterval(countdownTimer)
+      countdownTimer = null
     }
   }
 
@@ -872,6 +908,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     rolloverTimer = setTimeout(function () {
       rolloverTimer = null
       catchUpIntervalRollovers()
+      updateIntervalRemaining()
       scheduleIntervalRollover()
     }, delay)
   }

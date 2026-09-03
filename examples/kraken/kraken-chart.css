@@ -224,3 +224,16 @@ html[data-theme="dark"] {
 .chart .ma-2 path.line {
 	stroke: var(--ma-2);
 }
+
+.interval-remaining {
+	position: absolute;
+	right: 10px;
+	bottom: 8px;
+	font-size: 10px;
+	font-family: sans-serif;
+	color: var(--chart-axis);
+	font-variant-numeric: tabular-nums;
+	pointer-events: none;
+	white-space: nowrap;
+	line-height: 1;
+}
