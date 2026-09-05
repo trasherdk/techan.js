@@ -45,7 +45,7 @@ Refactored to Kraken API:
 - [x] **aroon** — Aroon
 - [x] **atr** — Average True Range
 - [x] **atrtrailingstop** — ATR Trailing Stop
-- [ ] bollinger
+- [x] **bollinger** — Bollinger Bands
 - [ ] heikinashi
 - [ ] ichimoku
 - [ ] macd
