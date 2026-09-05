@@ -269,6 +269,17 @@ path.zero {
 	stroke-dasharray: 2, 2;
 }
 
+/* Williams %R */
+.williams path {
+	fill: none;
+	stroke-width: 1;
+}
+
+.williams path.williams.up {
+	stroke: var(--stroke-up);
+	stroke-width: 1.5;
+}
+
 /* ROC / SROC */
 .roc path.line,
 .sroc path.line {
