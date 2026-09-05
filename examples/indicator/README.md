@@ -48,7 +48,7 @@ Refactored to Kraken API:
 - [x] **bollinger** — Bollinger Bands
 - [x] **heikinashi** — Heikin-Ashi
 - [x] **ichimoku** — Ichimoku Cloud
-- [ ] macd
+- [x] **macd** — MACD
 - [ ] multi
 - [ ] multi-coindesk
 - [ ] roc

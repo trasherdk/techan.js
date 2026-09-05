@@ -264,6 +264,13 @@ path.zero {
 }
 
 /* MACD */
+.macd path.macd,
+.macd path.signal,
+.macd path.zero {
+	fill: none;
+	stroke-width: 1;
+}
+
 path.macd {
 	stroke: var(--stroke-accent);
 }

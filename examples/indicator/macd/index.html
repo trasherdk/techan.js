@@ -1,38 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <title>MACD</title>
-    <link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16"> 
-    <script src="https://d3js.org/d3.v4.js"></script>
-    <script src="/lib/techan.min.js"></script>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>MACD</title>
+  <link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16">
+  <script src="../theme.js"></script>
+  <script src="/lib/d3/v5/d3.js"></script>
+  <script src="/lib/techan.min.js"></script>
+  <script src="../kraken-data.js"></script>
+  <script src="macd-chart.js?v=2"></script>
+  <link href="../indicator.css?v=3" rel="stylesheet">
+</head>
 
-    <link href="styles.css" rel="stylesheet">
-    <link href="macd-chart.css" rel="stylesheet">
-    <script src="macd-chart.js"></script>
-  </head>
+<body>
+  <header>
+    <h1>MACD</h1>
+    <p class="subtitle">Kraken historic OHLC · <a data-indicator-try="symbol=BTC&currency=USD&interval=15m"></a></p>
+  </header>
+  <div id="chart"></div>
+  <p id="status" class="status">Loading…</p>
 
-  <body>
-    <div id="macd-chart">
+  <script>
+    window.addEventListener('DOMContentLoaded', async function () {
+      const status = document.getElementById('status')
+      try {
+        const params = getIndicatorParams()
+        const symbol = indicatorDisplaySymbol(params.symbol)
+        document.title = `MACD: ${symbol}/${params.currency.toUpperCase()}`
+        status.textContent = `Loading ${symbol}/${params.currency.toUpperCase()}…`
 
-    </div>
+        const result = await loadIndicatorOhlc(params)
+        const label = `${symbol}/${params.currency.toUpperCase()}`
 
-    <script>
-      const URL = "https://min-api.cryptocompare.com/data/histominute?fsym=XMR&tsym=EUR&limit=330&aggregate=5&e=Kraken&extraParams=test-app-v1";
+        d3.select('#chart').call(macdChart(result.data, {
+          label: label,
+          interval: result.interval
+        }))
 
-      d3.json(URL, (error, data) => {
-        if (error) {
-          console.error(error);
-          return false;
-        }
-        d3.select("#macd-chart").call(macdChart(d3, techan, data.Data));
-      });
-    </script>
-  </body>
+        status.textContent = `Loaded ${result.data.length} bars from Kraken (${label}, ${formatIndicatorInterval(result.interval)}).`
+      } catch (error) {
+        console.error(error)
+        status.textContent = error.message || 'Failed to load chart data'
+        status.classList.add('error')
+      }
+    })
+  </script>
+</body>
 
 </html>
