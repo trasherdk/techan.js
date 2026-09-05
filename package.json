@@ -26,12 +26,16 @@
   },
   "license": "MIT",
   "scripts": {
+    "build:examples-lib": "bash scripts/build-examples-lib.sh",
     "watch": "",
     "start": "",
     "test": ""
   },
   "dependencies": {
-    "d3": "^7.4.4"
+    "d3": "^7.4.4",
+    "grunt": "^1.6.3",
+    "grunt-browserify": "^6.0.0",
+    "grunt-contrib-uglify": "^5.2.2"
   },
   "devDependencies": {
     "jasmine-core": "~2.4.1",

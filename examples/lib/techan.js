@@ -1,9 +1,10 @@
 /*
  TechanJS v0.9.0-0
- (c) 2014 - 2019 Andre Dumas | https://github.com/andredumas/techan.js
+ (c) 2014 - 2026 Andre Dumas | https://github.com/andredumas/techan.js
 */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.techan = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 'use strict';module.exports='0.9.0-0';
+
 },{}],2:[function(require,module,exports){
 'use strict';
 
@@ -1710,8 +1711,8 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
           var min = [];
           var stochasticKBuffer = [];
           for (var per = 0; per < periodD; per++) {
-            max.push(0);
-            min.push(10000);
+            max.push(-Infinity);
+            min.push(Infinity);
             stochasticKBuffer.push(0);
           }
           var stochasticD = 0;
@@ -1737,7 +1738,7 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
           return datum(p.accessor.d(d), stochasticK,stochasticD, overbought, oversold);
         }
         else return datum(p.accessor.d(d), null, null, overbought, oversold);
-      }).filter(function(d) { return d.stochasticK; });
+      }).filter(function(d) { return d.stochasticK !== null; });
     }
 
     indicator.periodD = function(_) {
