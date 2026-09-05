@@ -49,8 +49,8 @@ Refactored to Kraken API:
 - [x] **heikinashi** — Heikin-Ashi
 - [x] **ichimoku** — Ichimoku Cloud
 - [x] **macd** — MACD
-- [ ] multi
-- [ ] multi-coindesk
+- ~~multi~~ — removed (multi-chart dashboard; superseded by Kraken charts)
+- ~~multi-coindesk~~ — removed (CoinDesk API dashboard; not an indicator demo)
 - [ ] roc
 - [ ] rsi
 - [ ] sroc
