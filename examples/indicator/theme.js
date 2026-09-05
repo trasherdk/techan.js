@@ -92,7 +92,20 @@ function mountIndicatorThemeToggle () {
 initIndicatorTheme()
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', mountIndicatorThemeToggle)
+  document.addEventListener('DOMContentLoaded', function () {
+    mountIndicatorThemeToggle()
+    mountIndicatorTryLinks()
+  })
 } else {
   mountIndicatorThemeToggle()
+  mountIndicatorTryLinks()
+}
+
+function mountIndicatorTryLinks () {
+  document.querySelectorAll('[data-indicator-try]').forEach(function (el) {
+    const query = (el.getAttribute('data-indicator-try') || 'symbol=BTC&currency=USD&interval=15m')
+      .replace(/^\?/, '')
+    el.href = `?${query}`
+    el.textContent = `Try: ${window.location.pathname}?${query}`
+  })
 }

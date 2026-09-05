@@ -16,6 +16,14 @@ These demos use [techan.js](https://github.com/trasherdk/techan.js) indicators w
 
 Plot colours for all indicators live in **`indicator.css`** — do not add per-indicator `styles.css` files for migrated examples.
 
+Each `index.html` includes a sample link in the header:
+
+```html
+<p class="subtitle">Kraken historic OHLC · <a data-indicator-try="symbol=BTC&currency=USD&interval=15m"></a></p>
+```
+
+`theme.js` sets the `href` and label (e.g. `Try: /indicator/atr/?symbol=BTC&currency=USD&interval=15m`).
+
 ## URL parameters
 
 | Param | Default | Description |
@@ -27,7 +35,7 @@ Plot colours for all indicators live in **`indicator.css`** — do not add per-i
 
 Bare numbers work too (`interval=15` → 15m). Kraken API expects minutes: 1, 5, 15, 30, 60, 240, 1440, 10080, 21600.
 
-Example: `adx/?symbol=ETH&currency=EUR&interval=4h`
+Example: [adx/?symbol=ETH&currency=EUR&interval=4h](/indicator/adx/?symbol=ETH&currency=EUR&interval=4h)
 
 ## Migration status
 

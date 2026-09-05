@@ -77,6 +77,17 @@ header .subtitle,
 	margin: 0;
 }
 
+header .subtitle a,
+header .indicator-try-link {
+	color: var(--stroke-accent);
+	text-decoration: none;
+}
+
+header .subtitle a:hover,
+header .indicator-try-link:hover {
+	text-decoration: underline;
+}
+
 header code {
 	font-size: 11px;
 }
