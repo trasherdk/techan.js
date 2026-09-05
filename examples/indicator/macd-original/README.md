@@ -1,1 +1,0 @@
-MACD calculation and rendering demo.
