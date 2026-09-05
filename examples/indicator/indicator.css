@@ -263,6 +263,14 @@ path.zero {
 	stroke: var(--stroke-down);
 }
 
+/* ROC / SROC */
+.roc path.line,
+.sroc path.line {
+	fill: none;
+	stroke-width: 1;
+	stroke: var(--stroke-accent);
+}
+
 /* MACD */
 .macd path.macd,
 .macd path.signal,
