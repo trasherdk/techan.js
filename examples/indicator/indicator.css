@@ -17,6 +17,11 @@ html[data-theme="light"] {
 	--fill-oscillator: rgba(0, 0, 255, 0.025);
 	--fill-difference: rgba(187, 187, 187, 0.5);
 	--toggle-hover: rgba(0, 0, 0, 0.06);
+	--ichimoku-chikou: #bf5fff;
+	--ichimoku-tenkan: #0033ff;
+	--ichimoku-kijun: #fbb117;
+	--ichimoku-span-a: #006600;
+	--ichimoku-span-b: #cc0000;
 }
 
 html[data-theme="dark"] {
@@ -36,6 +41,11 @@ html[data-theme="dark"] {
 	--fill-oscillator: rgba(102, 136, 255, 0.08);
 	--fill-difference: rgba(120, 120, 120, 0.35);
 	--toggle-hover: rgba(255, 255, 255, 0.08);
+	--ichimoku-chikou: #c88aff;
+	--ichimoku-tenkan: #6688ff;
+	--ichimoku-kijun: #fbb117;
+	--ichimoku-span-a: hsl(120, 70%, 45%);
+	--ichimoku-span-b: #ff6666;
 }
 
 html,
@@ -321,4 +331,43 @@ path.candle.down {
 
 .atrtrailingstop path.up {
 	stroke: var(--stroke-up);
+}
+
+/* Ichimoku */
+.ichimoku path {
+	fill: none;
+	stroke-width: 0.8;
+	stroke: var(--stroke-neutral);
+}
+
+.ichimoku path.chikouspan {
+	stroke: var(--ichimoku-chikou);
+}
+
+.ichimoku path.tenkansen {
+	stroke: var(--ichimoku-tenkan);
+}
+
+.ichimoku path.kijunsen {
+	stroke: var(--ichimoku-kijun);
+}
+
+.ichimoku path.kumo {
+	opacity: 0.1;
+}
+
+.ichimoku path.kumo.up {
+	fill: var(--stroke-up);
+}
+
+.ichimoku path.kumo.down {
+	fill: var(--stroke-down);
+}
+
+.ichimoku path.senkouspana {
+	stroke: var(--ichimoku-span-a);
+}
+
+.ichimoku path.senkouspanb {
+	stroke: var(--ichimoku-span-b);
 }

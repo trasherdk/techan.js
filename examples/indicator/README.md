@@ -47,7 +47,7 @@ Refactored to Kraken API:
 - [x] **atrtrailingstop** — ATR Trailing Stop
 - [x] **bollinger** — Bollinger Bands
 - [x] **heikinashi** — Heikin-Ashi
-- [ ] ichimoku
+- [x] **ichimoku** — Ichimoku Cloud
 - [ ] macd
 - [ ] multi
 - [ ] multi-coindesk
