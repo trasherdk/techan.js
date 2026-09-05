@@ -53,7 +53,7 @@ Refactored to Kraken API:
 - ~~multi-coindesk~~ — removed (CoinDesk API dashboard; not an indicator demo)
 - [x] **roc** — Rate of Change
 - [x] **rsi** — Relative Strength Index
-- [ ] sroc
+- [x] **sroc** — Smoothed Rate of Change
 - [ ] stochastic
 - [ ] williams
 
