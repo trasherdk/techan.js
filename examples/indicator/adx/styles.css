@@ -1,16 +1,28 @@
 body {
   font: 10px sans-serif;
+  margin: 0;
+  padding: 0 12px 24px;
+}
+
+header {
+  padding: 12px 0 8px;
+}
+
+header h1 {
+  font: 600 16px sans-serif;
+  margin: 0 0 4px;
+}
+
+header .subtitle,
+.status,
+.chart-meta {
+  font: 12px sans-serif;
+  color: #555;
+  margin: 0;
 }
 
 text {
   fill: #000;
-}
-
-button {
-  position: absolute;
-  right: 20px;
-  top: 440px;
-  display: none;
 }
 
 .adx path {
@@ -27,9 +39,9 @@ button {
 }
 
 .adx path.plusDi {
-  stroke: #00ff00;
+  stroke: #00aa00;
 }
 
 .adx path.minusDi {
-  stroke: #ff0000;
+  stroke: #cc0000;
 }
