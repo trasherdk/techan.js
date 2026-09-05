@@ -74,6 +74,6 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
 };
 
 function datum(date, stochasticK, stochasticD, overbought, oversold) {
-  if(stochasticK) return { date: date, stochasticK: stochasticK, stochasticD: stochasticD, overbought: overbought, oversold: oversold };
+  if(stochasticK != null) return { date: date, stochasticK: stochasticK, stochasticD: stochasticD, overbought: overbought, oversold: oversold };
   else return { date: date, stochasticK: null, stochasticD: null, overbought: overbought, oversold: oversold };
 }

@@ -1006,9 +1006,9 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
     function indicator(data) {
       return data.map(function(d, i) {
         if(i >= (p.period-1)){
-          var max = 0;
+          var max = -Infinity;
           var maxi = 0;
-          var min = 10000;
+          var min = Infinity;
           var mini = 0;
           for (var j = 0; j < p.period; j++) {
             if( p.accessor.h(data[i-j]) > max){
@@ -1026,7 +1026,7 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
           return datum(p.accessor.d(d), up,down, oscillator, middle, overbought, oversold);
         }
         else return datum(p.accessor.d(d));
-      }).filter(function(d) { return d.up; });
+      }).filter(function(d) { return d.up != null; });
     }
 
     indicator.overbought = function(_) {
@@ -1055,7 +1055,7 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
 };
 
 function datum(date, up,down,oscillator, middle, overbought, oversold) {
-  if(up) return { date: date, up: up,down:down,oscillator:oscillator, middle: middle, overbought: overbought, oversold: oversold };
+  if(up != null) return { date: date, up: up,down:down,oscillator:oscillator, middle: middle, overbought: overbought, oversold: oversold };
   else return { date: date, up: null,down:null,oscillator:null, middle: null, overbought: null, oversold: null };
 }
 
@@ -1770,7 +1770,7 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
 };
 
 function datum(date, stochasticK, stochasticD, overbought, oversold) {
-  if(stochasticK) return { date: date, stochasticK: stochasticK, stochasticD: stochasticD, overbought: overbought, oversold: oversold };
+  if(stochasticK != null) return { date: date, stochasticK: stochasticK, stochasticD: stochasticD, overbought: overbought, oversold: oversold };
   else return { date: date, stochasticK: null, stochasticD: null, overbought: overbought, oversold: oversold };
 }
 
@@ -1832,9 +1832,9 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
     function indicator(data) {
       return data.map(function(d, i) {
          if(i >= p.period){
-          var max = 0;
+          var max = -Infinity;
           var maxi = 0;
-          var min = 10000;
+          var min = Infinity;
           var mini = 0;
           for (var j = 0; j < p.period; j++) {
             if(p.accessor.h(data[i-j]) > max){
@@ -1850,7 +1850,7 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
           return datum(p.accessor.d(d), williams, middle, overbought, oversold);
         }
         else return datum(p.accessor.d(d));
-      }).filter(function(d) { return d.williams; });
+      }).filter(function(d) { return d.williams != null; });
     }
 
     indicator.overbought = function(_) {
@@ -1879,7 +1879,7 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
 };
 
 function datum(date, williams, middle, overbought, oversold) {
-  if(williams) return { date: date, williams: williams, middle: middle, overbought: overbought, oversold: oversold };
+  if(williams != null) return { date: date, williams: williams, middle: middle, overbought: overbought, oversold: oversold };
   else return { date: date, williams: null, middle: null, overbought: null, oversold: null };
 }
 

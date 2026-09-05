@@ -10,9 +10,9 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
     function indicator(data) {
       return data.map(function(d, i) {
         if(i >= (p.period-1)){
-          var max = 0;
+          var max = -Infinity;
           var maxi = 0;
-          var min = 10000;
+          var min = Infinity;
           var mini = 0;
           for (var j = 0; j < p.period; j++) {
             if( p.accessor.h(data[i-j]) > max){
@@ -30,7 +30,7 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
           return datum(p.accessor.d(d), up,down, oscillator, middle, overbought, oversold);
         }
         else return datum(p.accessor.d(d));
-      }).filter(function(d) { return d.up; });
+      }).filter(function(d) { return d.up != null; });
     }
 
     indicator.overbought = function(_) {
@@ -59,6 +59,6 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
 };
 
 function datum(date, up,down,oscillator, middle, overbought, oversold) {
-  if(up) return { date: date, up: up,down:down,oscillator:oscillator, middle: middle, overbought: overbought, oversold: oversold };
+  if(up != null) return { date: date, up: up,down:down,oscillator:oscillator, middle: middle, overbought: overbought, oversold: oversold };
   else return { date: date, up: null,down:null,oscillator:null, middle: null, overbought: null, oversold: null };
 }
