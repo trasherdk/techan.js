@@ -54,7 +54,7 @@ Refactored to Kraken API:
 - [x] **roc** — Rate of Change
 - [x] **rsi** — Relative Strength Index
 - [x] **sroc** — Smoothed Rate of Change
-- [ ] stochastic
+- [x] **stochastic** — Stochastic Oscillator
 - [ ] williams
 
 Each indicator is updated one at a time: replace `data.csv` / CryptoCompare fetches with `loadIndicatorOhlc()`, use local `/lib/d3/v5/d3.js`, link `../indicator.css` + `../theme.js`, and keep the existing techan plot logic.

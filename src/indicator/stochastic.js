@@ -15,8 +15,8 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
           var min = [];
           var stochasticKBuffer = [];
           for (var per = 0; per < periodD; per++) {
-            max.push(0);
-            min.push(10000);
+            max.push(-Infinity);
+            min.push(Infinity);
             stochasticKBuffer.push(0);
           }
           var stochasticD = 0;
@@ -42,7 +42,7 @@ module.exports = function(indicatorMixin, accessor_ohlc) {  // Injected dependen
           return datum(p.accessor.d(d), stochasticK,stochasticD, overbought, oversold);
         }
         else return datum(p.accessor.d(d), null, null, overbought, oversold);
-      }).filter(function(d) { return d.stochasticK; });
+      }).filter(function(d) { return d.stochasticK !== null; });
     }
 
     indicator.periodD = function(_) {

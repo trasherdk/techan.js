@@ -255,12 +255,18 @@ path.zero {
 	stroke-width: 1;
 }
 
-.stochastic.up {
+.stochastic path.k {
 	stroke: var(--stroke-up);
 }
 
-.stochastic.down {
+.stochastic path.d {
 	stroke: var(--stroke-down);
+}
+
+.stochastic path.overbought,
+.stochastic path.oversold {
+	stroke: var(--stroke-signal);
+	stroke-dasharray: 2, 2;
 }
 
 /* ROC / SROC */
