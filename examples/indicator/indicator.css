@@ -292,3 +292,33 @@ path.difference {
 .bollinger path.middle {
 	stroke: var(--stroke-guide);
 }
+
+/* Candlestick */
+path.candle.body {
+	stroke-width: 0;
+}
+
+path.candle.up {
+	fill: var(--stroke-up);
+	stroke: var(--stroke-up);
+}
+
+path.candle.down {
+	fill: var(--stroke-down);
+	stroke: var(--stroke-down);
+}
+
+/* ATR Trailing Stop */
+.atrtrailingstop path {
+	fill: none;
+	stroke-width: 0.8;
+	stroke: var(--stroke-neutral);
+}
+
+.atrtrailingstop path.down {
+	stroke: var(--stroke-down);
+}
+
+.atrtrailingstop path.up {
+	stroke: var(--stroke-up);
+}
