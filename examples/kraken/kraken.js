@@ -389,13 +389,17 @@ function axisTimeFormat (interval, visibleBars) {
   if (interval >= 1440 || visibleDays > 10) {
     return d3.timeFormat('%d %b')
   }
-  if (interval >= 60 || visibleDays > 1.5) {
+  if (interval >= 60 && visibleDays > 7) {
     return d3.timeFormat('%d/%m')
   }
-  if (interval >= 15 || visibleDays > 0.5) {
-    return d3.timeFormat('%d/%m %H:%M')
+
+  const timeFmt = d3.timeFormat('%H:%M')
+  return function (date) {
+    if (date.getHours() === 0 && date.getMinutes() === 0) {
+      return `${date.getDate()}/${date.getMonth() + 1}`
+    }
+    return timeFmt(date)
   }
-  return d3.timeFormat('%H:%M')
 }
 
 function formatCrosshairTime (interval, visibleBars) {
@@ -411,8 +415,84 @@ function formatCrosshairTime (interval, visibleBars) {
   return d3.timeFormat('%d/%m %H:%M')
 }
 
-function axisTickCount (plotWidth) {
-  return Math.max(4, Math.min(10, Math.floor(plotWidth / 85)))
+function axisVisibleMs (intervalMinutes, visibleBars) {
+  return Math.max(1, visibleBars - 1) * Number(intervalMinutes) * 60 * 1000
+}
+
+function axisMaxStepMinutes (intervalMinutes, visibleMs) {
+  const interval = Number(intervalMinutes)
+  const visibleHours = visibleMs / 3600000
+
+  if (interval <= 1) {
+    if (visibleHours <= 4) return 15
+    if (visibleHours <= 12) return 60
+    if (visibleHours <= 48) return 180
+    return 360
+  }
+  if (interval <= 5) {
+    if (visibleHours <= 12) return 60
+    if (visibleHours <= 48) return 180
+    return 360
+  }
+  if (interval <= 15) {
+    if (visibleHours <= 12) return 60
+    if (visibleHours <= 48) return 180
+    return 360
+  }
+  if (interval <= 60) {
+    if (visibleHours <= 24) return 180
+    if (visibleHours <= 72) return 360
+    return 720
+  }
+  if (interval <= 240) {
+    if (visibleHours <= 48) return 360
+    return 1440
+  }
+  return null
+}
+
+function axisTickCount (plotWidth, intervalMinutes) {
+  const interval = Number(intervalMinutes) || 60
+  let spacing = 85
+  if (interval <= 1) spacing = 55
+  else if (interval <= 15) spacing = 62
+  else if (interval <= 60) spacing = 72
+  return Math.max(5, Math.min(16, Math.floor(plotWidth / spacing)))
+}
+
+function axisTickSpec (intervalMinutes, visibleBars, plotWidth) {
+  const interval = Number(intervalMinutes)
+  if (interval >= 1440) {
+    return null
+  }
+
+  const visibleMs = axisVisibleMs(interval, visibleBars)
+  const targetTicks = axisTickCount(plotWidth, interval)
+  let stepMin = Math.ceil((visibleMs / targetTicks) / 60000)
+  const maxStep = axisMaxStepMinutes(interval, visibleMs)
+  if (maxStep != null) {
+    stepMin = Math.min(stepMin, maxStep)
+  }
+
+  const niceSteps = [1, 2, 5, 10, 15, 20, 30, 60, 120, 180, 240, 360, 480, 720, 1440, 2880, 4320, 10080]
+  stepMin = niceSteps.find(function (step) {
+    return step >= stepMin
+  }) || niceSteps[niceSteps.length - 1]
+
+  if (stepMin < interval) {
+    stepMin = interval
+  }
+  if (stepMin % interval !== 0) {
+    stepMin = Math.ceil(stepMin / interval) * interval
+  }
+
+  if (stepMin >= 1440) {
+    return { interval: d3.timeDay, step: Math.max(1, Math.round(stepMin / 1440)) }
+  }
+  if (stepMin >= 60) {
+    return { interval: d3.timeHour, step: stepMin / 60 }
+  }
+  return { interval: d3.timeMinute, step: stepMin }
 }
 
 async function fetchOhlc (pair, interval, options = {}) {

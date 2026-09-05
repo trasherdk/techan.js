@@ -927,20 +927,35 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   function configureXAxis () {
     const zd = x.zoomable().domain()
     const visibleBars = Math.max(1, zd[1] - zd[0])
-    const tickCount = axisTickCount(width)
-    x.ticks(tickCount)
+    const tickCount = axisTickCount(width, interval)
+    const tickSpec = axisTickSpec(interval, visibleBars, width)
     const fmt = axisTimeFormat(interval, visibleBars)
     const crosshairFmt = formatCrosshairTime(interval, visibleBars)
-    xAxis
-      .ticks(tickCount)
-      .tickFormat(fmt)
+
+    if (tickSpec) {
+      x.ticks(tickSpec.interval, tickSpec.step)
+      xAxis
+        .ticks(tickSpec.interval, tickSpec.step)
+        .tickFormat(fmt)
+    } else {
+      x.ticks(tickCount)
+      xAxis
+        .ticks(tickCount)
+        .tickFormat(fmt)
+    }
     timeAnnotation.format(crosshairFmt)
   }
 
   function renderXAxis () {
+    const zd = x.zoomable().domain()
+    const visibleBars = Math.max(1, zd[1] - zd[0])
+    const fmt = axisTimeFormat(interval, visibleBars)
     const ticks = svg.select('g.x.axis')
     ticks.call(xAxis)
     const tickTexts = ticks.selectAll('.tick text')
+    tickTexts.text(function (d) {
+      return fmt(d)
+    })
     tickTexts.attr('text-anchor', 'middle')
     const nodes = tickTexts.nodes()
     if (nodes.length > 0) {
