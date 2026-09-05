@@ -35,7 +35,7 @@ Refactored to Kraken API:
 
 - [x] **adx** — Average Directional Index
 - [x] **aroon** — Aroon
-- [ ] atr
+- [x] **atr** — Average True Range
 - [ ] atrtrailingstop
 - [ ] bollinger
 - [ ] heikinashi
