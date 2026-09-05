@@ -1,89 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 
-    <head>
-        <meta charset="utf-8">
-        <script src="https://d3js.org/d3.v4.min.js"></script>
-        <script src="/lib/techan.min.js"></script>
-        <link href="styles.css" rel="stylesheet">
-    </head>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Aroon</title>
+  <link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16">
+  <script src="/lib/d3/v5/d3.js"></script>
+  <script src="/lib/techan.min.js"></script>
+  <script src="../kraken-data.js"></script>
+  <script src="aroon-chart.js"></script>
+  <link href="styles.css" rel="stylesheet">
+</head>
 
-    <body>
-        <button>Update</button>
-        <script>
+<body>
+  <header>
+    <h1>Aroon</h1>
+    <p class="subtitle">Kraken historic OHLC · <code>?symbol=BTC&amp;currency=USD&amp;interval=15m</code></p>
+  </header>
+  <div id="chart"></div>
+  <p id="status" class="status">Loading…</p>
 
-            var margin = { top: 20, right: 20, bottom: 30, left: 50 },
-                width = 960 - margin.left - margin.right,
-                height = 500 - margin.top - margin.bottom;
+  <script>
+    window.addEventListener('DOMContentLoaded', async function () {
+      const status = document.getElementById('status')
+      try {
+        const params = getIndicatorParams()
+        const symbol = indicatorDisplaySymbol(params.symbol)
+        document.title = `Aroon: ${symbol}/${params.currency.toUpperCase()}`
+        status.textContent = `Loading ${symbol}/${params.currency.toUpperCase()}…`
 
-            var parseDate = d3.timeParse("%d-%b-%y");
+        const result = await loadIndicatorOhlc(params)
+        const label = `${symbol}/${params.currency.toUpperCase()}`
 
-            var x = techan.scale.financetime()
-                .range([0, width]);
+        d3.select('#chart').call(aroonChart(result.data, {
+          label: label,
+          interval: result.interval
+        }))
 
-            var y = d3.scaleLinear()
-                .range([height, 0]);
+        status.textContent = `Loaded ${result.data.length} bars from Kraken (${label}, ${formatIndicatorInterval(result.interval)}).`
+      } catch (error) {
+        console.error(error)
+        status.textContent = error.message || 'Failed to load chart data'
+      }
+    })
+  </script>
+</body>
 
-            var aroon = techan.plot.aroon()
-                .xScale(x)
-                .yScale(y);
-
-            var accessor = aroon.accessor();
-
-            var xAxis = d3.axisBottom(x);
-
-            var yAxis = d3.axisLeft(y)
-                .tickFormat(d3.format(",.3s"));
-
-            var svg = d3.select("body").append("svg")
-                .attr("width", width + margin.left + margin.right)
-                .attr("height", height + margin.top + margin.bottom)
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-            d3.csv("data.csv", function (error, data) {
-                data = data.map(function (d) {
-                    // Open, high, low, close generally not required, is being used here to demonstrate colored volume
-                    // bars
-                    return {
-                        date: parseDate(d.Date),
-                        volume: +d.Volume,
-                        open: +d.Open,
-                        high: +d.High,
-                        low: +d.Low,
-                        close: +d.Close
-                    };
-                }).sort(function (a, b) { return d3.ascending(accessor.d(a), accessor.d(b)); });
-
-                svg.append("g")
-                    .attr("class", "aroon");
-
-                svg.append("g")
-                    .attr("class", "x axis")
-                    .attr("transform", "translate(0," + height + ")");
-
-                svg.append("g")
-                    .attr("class", "y axis")
-                    .append("text")
-                    .attr("transform", "rotate(-90)")
-                    .attr("y", 6)
-                    .attr("dy", ".71em")
-                    .style("text-anchor", "end")
-                    .text("Aroon");
-
-                // Data to display initially
-                draw(data.slice(0, data.length - 20));
-                // Only want this button to be active if the data has loaded
-                d3.select("button").on("click", function () { draw(data); }).style("display", "inline");
-            });
-
-            function draw(data) {
-                var aroonData = techan.indicator.aroon()(data);
-                x.domain(aroonData.map(accessor.d));
-                y.domain(techan.scale.plot.aroon().domain());
-
-                svg.selectAll("g.aroon").datum(aroonData).call(aroon);
-                svg.selectAll("g.x.axis").call(xAxis);
-                svg.selectAll("g.y.axis").call(yAxis);
-            }
-        </script>
+</html>

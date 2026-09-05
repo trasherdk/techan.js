@@ -1,52 +1,68 @@
 body {
   font: 10px sans-serif;
+  margin: 0;
+  padding: 0 12px 24px;
+}
+
+header {
+  padding: 12px 0 8px;
+}
+
+header h1 {
+  font: 600 16px sans-serif;
+  margin: 0 0 4px;
+}
+
+header .subtitle,
+.status,
+.chart-meta {
+  font: 12px sans-serif;
+  color: #555;
+  margin: 0;
 }
 
 text {
   fill: #000;
 }
 
-button {
-  position: absolute;
-  right: 20px;
-  top: 440px;
-  display: none;
-}
-
 .aroon path {
   fill: none;
   stroke-width: 1;
 }
+
 .aroon {
   stroke: #000000;
 }
 
 .aroon.up {
-  stroke: #00AA00;
+  stroke: #00aa00;
   stroke-width: 1.5;
 }
 
 .aroon.down {
-  stroke: #FF0000;
+  stroke: #cc0000;
   stroke-width: 1.5;
 }
 
 .aroon.oscillator {
-  stroke: #0000FF;
+  stroke: #0000ff;
   stroke-width: 0.5;
 }
-.aroon.oscillatorArea{
-  fill: #0000FF;
-  opacity:0.025;
+
+.aroon.oscillatorArea {
+  fill: #0000ff;
+  opacity: 0.025;
 }
 
-.aroon path.overbought, .aroon path.oversold {
-  stroke: #FF9999;
+.aroon path.overbought,
+.aroon path.oversold {
+  stroke: #ff9999;
   stroke-width: 1;
   stroke-dasharray: 2, 2;
 }
 
-.aroon path.middle, path.zero {
-  stroke: #BBBBBB;
+.aroon path.middle,
+path.zero {
+  stroke: #bbbbbb;
   stroke-dasharray: 5, 5;
 }
