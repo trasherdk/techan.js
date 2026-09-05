@@ -7,8 +7,14 @@ These demos use [techan.js](https://github.com/trasherdk/techan.js) indicators w
 `kraken-data.js` loads markets, resolves pairs, and fetches OHLC bars. Include it from any indicator subdirectory:
 
 ```html
+<script src="../theme.js"></script>
 <script src="../kraken-data.js"></script>
+<link href="../indicator.css" rel="stylesheet">
 ```
+
+`theme.js` applies light/dark mode (same preference as the Kraken charts: `techan.kraken.theme` in localStorage) and adds a header theme toggle.
+
+Plot colours for all indicators live in **`indicator.css`** — do not add per-indicator `styles.css` files for migrated examples.
 
 ## URL parameters
 
@@ -43,7 +49,7 @@ Refactored to Kraken API:
 - [ ] stochastic
 - [ ] williams
 
-Each indicator is updated one at a time: replace `data.csv` / CryptoCompare fetches with `loadIndicatorOhlc()`, use local `/lib/d3/v5/d3.js`, and keep the existing techan plot logic.
+Each indicator is updated one at a time: replace `data.csv` / CryptoCompare fetches with `loadIndicatorOhlc()`, use local `/lib/d3/v5/d3.js`, link `../indicator.css` + `../theme.js`, and keep the existing techan plot logic.
 
 ## Notes
 

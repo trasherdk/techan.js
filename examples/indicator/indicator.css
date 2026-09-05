@@ -1,0 +1,283 @@
+/* Shared indicator example styles — light/dark via html[data-theme] */
+
+html[data-theme="light"] {
+	--page-bg: #ffffff;
+	--page-text: #222222;
+	--page-muted: #555555;
+	--chart-text: #000000;
+	--chart-axis: #333333;
+	--chart-axis-line: #cccccc;
+	--stroke-neutral: #000000;
+	--stroke-up: #00aa00;
+	--stroke-down: #cc0000;
+	--stroke-accent: #0000aa;
+	--stroke-signal: #ff9999;
+	--stroke-guide: #bbbbbb;
+	--stroke-oscillator: #0000ff;
+	--fill-oscillator: rgba(0, 0, 255, 0.025);
+	--fill-difference: rgba(187, 187, 187, 0.5);
+	--toggle-hover: rgba(0, 0, 0, 0.06);
+}
+
+html[data-theme="dark"] {
+	--page-bg: #1a1a1a;
+	--page-text: #e8e8e8;
+	--page-muted: #aaaaaa;
+	--chart-text: #dddddd;
+	--chart-axis: #aaaaaa;
+	--chart-axis-line: #444444;
+	--stroke-neutral: #cccccc;
+	--stroke-up: hsl(120, 70%, 50%);
+	--stroke-down: #ff6666;
+	--stroke-accent: #6b8cff;
+	--stroke-signal: #cc7777;
+	--stroke-guide: #666666;
+	--stroke-oscillator: #6688ff;
+	--fill-oscillator: rgba(102, 136, 255, 0.08);
+	--fill-difference: rgba(120, 120, 120, 0.35);
+	--toggle-hover: rgba(255, 255, 255, 0.08);
+}
+
+html,
+body {
+	background: var(--page-bg);
+	color: var(--page-text);
+}
+
+body {
+	font: 10px sans-serif;
+	margin: 0;
+	padding: 0 12px 24px;
+}
+
+header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 12px 0 8px;
+}
+
+header .header-text {
+	flex: 1;
+	min-width: 0;
+}
+
+header h1 {
+	font: 600 16px sans-serif;
+	margin: 0 0 4px;
+	color: var(--page-text);
+}
+
+header .subtitle,
+.status,
+.chart-meta {
+	font: 12px sans-serif;
+	color: var(--page-muted);
+	margin: 0;
+}
+
+header code {
+	font-size: 11px;
+}
+
+#chart {
+	min-height: 200px;
+}
+
+.status.error {
+	color: var(--stroke-down);
+}
+
+.theme-toggle {
+	flex-shrink: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: none;
+	border-radius: 6px;
+	background: transparent;
+	color: var(--page-text);
+	cursor: pointer;
+}
+
+.theme-toggle:hover {
+	background: var(--toggle-hover);
+}
+
+.theme-toggle .theme-icon {
+	display: none;
+}
+
+html[data-theme="light"] .theme-toggle .theme-icon-moon {
+	display: block;
+}
+
+html[data-theme="dark"] .theme-toggle .theme-icon-sun {
+	display: block;
+}
+
+.chart text,
+text {
+	fill: var(--chart-text);
+}
+
+.chart .axis text,
+.x.axis text,
+.y.axis text {
+	fill: var(--chart-axis);
+}
+
+.chart .axis line,
+.chart .axis path,
+.x.axis line,
+.x.axis path,
+.y.axis line,
+.y.axis path {
+	stroke: var(--chart-axis-line);
+}
+
+/* ADX */
+.adx path {
+	fill: none;
+	stroke-width: 1;
+}
+
+.adx {
+	stroke: var(--stroke-neutral);
+}
+
+.adx path.adx {
+	stroke: var(--stroke-neutral);
+}
+
+.adx path.plusDi {
+	stroke: var(--stroke-up);
+}
+
+.adx path.minusDi {
+	stroke: var(--stroke-down);
+}
+
+/* Aroon */
+.aroon path {
+	fill: none;
+	stroke-width: 1;
+}
+
+.aroon {
+	stroke: var(--stroke-neutral);
+}
+
+.aroon.up {
+	stroke: var(--stroke-up);
+	stroke-width: 1.5;
+}
+
+.aroon.down {
+	stroke: var(--stroke-down);
+	stroke-width: 1.5;
+}
+
+.aroon.oscillator {
+	stroke: var(--stroke-oscillator);
+	stroke-width: 0.5;
+}
+
+.aroon.oscillatorArea {
+	fill: var(--stroke-oscillator);
+	opacity: 0.35;
+}
+
+.aroon path.overbought,
+.aroon path.oversold,
+.rsi path.overbought,
+.rsi path.oversold,
+.stochastic path.overbought,
+.stochastic path.oversold,
+.williams path.overbought,
+.williams path.oversold {
+	stroke: var(--stroke-signal);
+	stroke-dasharray: 2, 2;
+}
+
+.aroon path.middle,
+.rsi path.middle,
+path.zero {
+	stroke: var(--stroke-guide);
+	stroke-dasharray: 5, 5;
+}
+
+/* ATR */
+.atr path {
+	fill: none;
+	stroke-width: 1;
+	stroke: var(--stroke-neutral);
+}
+
+/* RSI */
+.rsi path {
+	fill: none;
+	stroke-width: 1;
+}
+
+.rsi {
+	stroke: var(--stroke-neutral);
+}
+
+/* Stochastic */
+.stochastic path {
+	fill: none;
+	stroke-width: 1;
+}
+
+.stochastic.up {
+	stroke: var(--stroke-up);
+}
+
+.stochastic.down {
+	stroke: var(--stroke-down);
+}
+
+/* MACD */
+path.macd {
+	stroke: var(--stroke-accent);
+}
+
+path.signal {
+	stroke: var(--stroke-signal);
+}
+
+path.difference {
+	fill: var(--stroke-guide);
+	opacity: 0.5;
+}
+
+/* Bollinger */
+.ohlc path.up {
+	stroke: var(--stroke-up);
+}
+
+.ohlc path.down {
+	stroke: var(--stroke-down);
+}
+
+.bollinger path {
+	fill: none;
+	stroke-width: 1;
+}
+
+.bollinger path.upper {
+	stroke: var(--stroke-accent);
+}
+
+.bollinger path.lower {
+	stroke: var(--stroke-signal);
+}
+
+.bollinger path.middle {
+	stroke: var(--stroke-guide);
+}

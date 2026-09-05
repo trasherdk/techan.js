@@ -8,11 +8,12 @@
   <meta http-equiv="Expires" content="0">
   <title>ADX</title>
   <link rel="icon" href="/icons/chart.png" type="image/png" sizes="16x16">
+  <script src="../theme.js"></script>
   <script src="/lib/d3/v5/d3.js"></script>
   <script src="/lib/techan.min.js"></script>
   <script src="../kraken-data.js"></script>
   <script src="adx-chart.js"></script>
-  <link href="styles.css" rel="stylesheet">
+  <link href="../indicator.css?v=1" rel="stylesheet">
 </head>
 
 <body>
@@ -44,6 +45,7 @@
       } catch (error) {
         console.error(error)
         status.textContent = error.message || 'Failed to load chart data'
+        status.classList.add('error')
       }
     })
   </script>
