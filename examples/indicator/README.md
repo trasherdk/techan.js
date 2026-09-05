@@ -28,7 +28,7 @@ Example: `adx/?symbol=ETH&currency=EUR&interval=4h`
 Refactored to Kraken API:
 
 - [x] **adx** — Average Directional Index
-- [ ] aroon
+- [x] **aroon** — Aroon
 - [ ] atr
 - [ ] atrtrailingstop
 - [ ] bollinger
