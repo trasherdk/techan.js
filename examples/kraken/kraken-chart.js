@@ -742,6 +742,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
   function mergeBar (target, source, options) {
     options = options || {}
+    const preservedOpen = options.preserveOpen ? target.open : null
     if (!options.preserveOpen) {
       target.open = source.open
     }
@@ -756,6 +757,10 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     target.volumeto = source.volumeto != null
       ? source.volumeto
       : (target.volumefrom * (target.vwap ?? target.close))
+    if (preservedOpen != null) {
+      target.high = Math.max(target.high, preservedOpen)
+      target.low = Math.min(target.low, preservedOpen)
+    }
   }
 
   function tradeTokenDelta (prev, next) {
@@ -830,6 +835,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
         return false
       }
       recordLastTrade(last, bar, false)
+      bar.open = accessor.o(last)
       mergeBar(last, bar, { preserveOpen: true })
       replaced = true
     } else if (!last || barTime > lastTime) {
