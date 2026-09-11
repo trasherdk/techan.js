@@ -631,6 +631,17 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     return nextBegin <= Date.now() - intervalMs
   }
 
+  function repairBarContinuity (afterIdx) {
+    const startIdx = Math.max(1, afterIdx + 1)
+    for (let i = startIdx; i < data.length; i++) {
+      const open = accessor.c(data[i - 1])
+      const bar = data[i]
+      bar.open = open
+      bar.high = Math.max(bar.high, open)
+      bar.low = Math.min(bar.low, open)
+    }
+  }
+
   function mergeHistoryBars (fetched) {
     fetched.sort(function (a, b) {
       return d3.ascending(accessor.d(a), accessor.d(b))
@@ -710,6 +721,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
       }
 
       mergeHistoryBars(fetched)
+      repairBarContinuity(anchorIdx)
 
       if (shouldFollowLive()) {
         applyGlobalView(loadKrakenViewState())
