@@ -315,6 +315,7 @@ async function bootstrapKrakenPage() {
   params = resolveKrakenParams()
 
   try {
+    await initKrakenTimeLocale()
     await loadKrakenMarkets()
   } catch (error) {
     console.log('bootstrapKrakenPage', error.message)

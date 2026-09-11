@@ -61,12 +61,6 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
   root.appendChild(chartEl)
 
-  await d3.json('https://cdn.jsdelivr.net/npm/d3-time-format@3/locale/da-DK.json').then(locale => {
-    d3.timeFormatDefaultLocale(locale)
-  }).catch(error => {
-    throw error.message
-  })
-
   let x = techan.scale.financetime()
     .range([0, width])
 
@@ -119,7 +113,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   const timeAnnotation = techan.plot.axisannotation()
     .axis(xAxis)
     .orient('bottom')
-    .format(d3.timeFormat('%d/%m %H:%M'))
+    .format(formatLocalDateTime)
     .width(72)
     .height(12)
     .translate([0, height])
@@ -953,8 +947,14 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     const ticks = svg.select('g.x.axis')
     ticks.call(xAxis)
     const tickTexts = ticks.selectAll('.tick text')
-    tickTexts.text(function (d) {
-      return fmt(d)
+    let lastLabel = null
+    tickTexts.each(function (d) {
+      const label = fmt(d)
+      const text = label === lastLabel ? '' : label
+      if (text) {
+        lastLabel = label
+      }
+      d3.select(this).text(text)
     })
     tickTexts.attr('text-anchor', 'middle')
     const nodes = tickTexts.nodes()

@@ -382,21 +382,83 @@ function krakenVolumeAccessor (ohlcAccessor, source) {
   return Object.assign(volumeFn, ohlcAccessor, { v: volumeFn })
 }
 
+const D3_TIME_LOCALE_BASE = 'https://cdn.jsdelivr.net/npm/d3-time-format@3/locale'
+
+function d3LocaleCandidates () {
+  const candidates = []
+  const lang = typeof navigator !== 'undefined' ? navigator.language : 'en-US'
+  if (lang) {
+    candidates.push(lang)
+    const base = lang.split('-')[0]
+    if (base && base !== lang) {
+      candidates.push(base)
+    }
+  }
+  candidates.push('en-GB', 'en-US')
+  return [...new Set(candidates)]
+}
+
+async function initKrakenTimeLocale () {
+  if (initKrakenTimeLocale.ready) {
+    return initKrakenTimeLocale.ready
+  }
+
+  initKrakenTimeLocale.ready = (async function () {
+    for (const tag of d3LocaleCandidates()) {
+      try {
+        const locale = await d3.json(`${D3_TIME_LOCALE_BASE}/${tag}.json`)
+        d3.timeFormatDefaultLocale(locale)
+        return tag
+      } catch (error) {
+        // try next candidate
+      }
+    }
+    return null
+  })()
+
+  return initKrakenTimeLocale.ready
+}
+
+function formatLocalDateNumeric (date) {
+  return `${date.getDate()}/${date.getMonth() + 1}`
+}
+
+function formatLocalDateNamed (date) {
+  return d3.timeFormat('%d %b')(date)
+}
+
+function formatLocalDateTime (date) {
+  return `${formatLocalDateNumeric(date)} ${d3.timeFormat('%H:%M')(date)}`
+}
+
+function isMonthlyAxisInterval (intervalMinutes) {
+  const interval = Number(intervalMinutes)
+  return interval >= 240 && interval < 1440
+}
+
 function axisTimeFormat (interval, visibleBars) {
   const bars = visibleBars || 720
   const visibleDays = (bars * interval) / 1440
 
+  if (isMonthlyAxisInterval(interval)) {
+    return function (date) {
+      if (date.getDate() === 1) {
+        return formatLocalDateNamed(date)
+      }
+      return formatLocalDateNumeric(date)
+    }
+  }
   if (interval >= 1440 || visibleDays > 10) {
-    return d3.timeFormat('%d %b')
+    return formatLocalDateNamed
   }
   if (interval >= 60 && visibleDays > 7) {
-    return d3.timeFormat('%d/%m')
+    return formatLocalDateNumeric
   }
 
   const timeFmt = d3.timeFormat('%H:%M')
   return function (date) {
     if (date.getHours() === 0 && date.getMinutes() === 0) {
-      return `${date.getDate()}/${date.getMonth() + 1}`
+      return formatLocalDateNumeric(date)
     }
     return timeFmt(date)
   }
@@ -407,12 +469,11 @@ function formatCrosshairTime (interval, visibleBars) {
   const visibleDays = (bars * interval) / 1440
 
   if (interval >= 1440 || visibleDays > 10) {
-    return d3.timeFormat('%d %b %Y')
+    return function (date) {
+      return `${formatLocalDateNamed(date)} ${date.getFullYear()}`
+    }
   }
-  if (interval >= 60 || visibleDays > 1.5) {
-    return d3.timeFormat('%d/%m %H:%M')
-  }
-  return d3.timeFormat('%d/%m %H:%M')
+  return formatLocalDateTime
 }
 
 function axisVisibleMs (intervalMinutes, visibleBars) {
@@ -462,6 +523,9 @@ function axisTickCount (plotWidth, intervalMinutes) {
 
 function axisTickSpec (intervalMinutes, visibleBars, plotWidth) {
   const interval = Number(intervalMinutes)
+  if (isMonthlyAxisInterval(interval)) {
+    return { interval: d3.timeDay, step: 1 }
+  }
   if (interval >= 1440) {
     return null
   }
