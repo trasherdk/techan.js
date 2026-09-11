@@ -707,8 +707,11 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     }
   }
 
-  function mergeBar (target, source) {
-    target.open = source.open
+  function mergeBar (target, source, options) {
+    options = options || {}
+    if (!options.preserveOpen) {
+      target.open = source.open
+    }
     target.high = source.high
     target.low = source.low
     target.close = source.close
@@ -771,8 +774,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   }
 
   function liveBarChanged (prev, next) {
-    return prev.open !== next.open ||
-      prev.high !== next.high ||
+    return prev.high !== next.high ||
       prev.low !== next.low ||
       prev.close !== next.close ||
       barVolume(prev) !== barVolume(next)
@@ -795,9 +797,15 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
         return false
       }
       recordLastTrade(last, bar, false)
-      mergeBar(last, bar)
+      mergeBar(last, bar, { preserveOpen: true })
       replaced = true
     } else if (!last || barTime > lastTime) {
+      if (last) {
+        const prevClose = accessor.c(last)
+        bar.open = prevClose
+        bar.high = Math.max(bar.high, prevClose)
+        bar.low = Math.min(bar.low, prevClose)
+      }
       recordLastTrade(last, bar, true)
       data.push(bar)
       structureChanged = true
