@@ -198,24 +198,41 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
   let panStartDomain = null
   let panStartX = 0
+  let panStartY = 0
+  let panActive = false
+  const panDragThreshold = 4
   let suppressViewSave = false
   let rolloverTimer = null
   let countdownTimer = null
   let catchUpInFlight = false
   let lastTradeTokens = 0
 
+  function beginPanDrag () {
+    panActive = true
+    clearCrosshair()
+    beginKrakenPan()
+    stopIntervalRollover()
+    if (panSurface) {
+      panSurface.classed('grabbing', true)
+    }
+  }
+
   const pan = d3.drag()
     .on('start', function () {
-      clearCrosshair()
-      beginKrakenPan()
-      stopIntervalRollover()
+      panActive = false
       panStartDomain = x.zoomable().domain().slice()
       panStartX = d3.event.x
-      if (panSurface) {
-        panSurface.classed('grabbing', true)
-      }
+      panStartY = d3.event.y
     })
     .on('drag', function () {
+      if (!panActive) {
+        const dx = d3.event.x - panStartX
+        const dy = d3.event.y - panStartY
+        if (Math.hypot(dx, dy) < panDragThreshold) {
+          return
+        }
+        beginPanDrag()
+      }
       const span = panStartDomain[1] - panStartDomain[0]
       const delta = -((d3.event.x - panStartX) / width) * span
       const domain = clampXDomain(
@@ -227,10 +244,14 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
       scheduleKrakenPanSync(domain, name)
     })
     .on('end', function () {
-      endKrakenPan()
       if (panSurface) {
         panSurface.classed('grabbing', false)
       }
+      if (!panActive) {
+        return
+      }
+      panActive = false
+      endKrakenPan()
       applyXDomain(x.zoomable().domain(), loadKrakenViewState())
       draw('refresh')
       syncViewStateFromChart()
@@ -246,9 +267,21 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     const node = crosshairNode()
     if (node) {
       delete node.__coord__
-      crosshairG.datum([]).call(ohlcCrosshair.refresh)
+      const datum = d3.select(node).datum()
+      if (datum) {
+        datum.x = null
+        datum.y = null
+      }
+      crosshairG.call(ohlcCrosshair.refresh)
     }
     updateBarInfo(null)
+  }
+
+  function refreshCrosshairIfActive () {
+    const node = crosshairNode()
+    if (node && node.__coord__ != null) {
+      crosshairG.call(ohlcCrosshair.refresh)
+    }
   }
 
   function barAtCrosshair () {
@@ -1001,6 +1034,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
         }
       }
 
+      refreshCrosshairIfActive()
       crosshairG.raise()
     } catch (error) {
       console.log('draw() try => catch', error.message)
