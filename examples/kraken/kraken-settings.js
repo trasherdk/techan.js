@@ -5,9 +5,7 @@ function renderKrakenCharts() {
   main.innerHTML = ''
   document.title = 'Kraken: ' + params.crypto + '-' + params.currency
 
-  const divisor = Math.max(1, Math.floor(window.innerWidth / 500))
-  const dim = dimension()
-  const chartWidth = (window.innerWidth - (dim.margin.left + dim.margin.right)) / divisor
+  const chartWidth = krakenChartWidth()
   const interval = params.interval
     ? Number(params.interval)
     : resolveInterval(params.res, params.agg)
@@ -37,10 +35,19 @@ function renderKrakenCharts() {
 }
 
 function applyKrakenParams(nextParams) {
+  const previousInterval = params
+    ? (params.interval ? Number(params.interval) : resolveInterval(params.res, params.agg))
+    : null
   params = Object.assign({}, kraken.defaults, pickKrakenParams(nextParams))
   params.api = params.api || kraken.defaultApi
   saveKrakenParams(params)
   clearKrakenParamsFromUrl()
+  const nextInterval = params.interval
+    ? Number(params.interval)
+    : resolveInterval(params.res, params.agg)
+  if (previousInterval != null && previousInterval !== nextInterval) {
+    clearKrakenViewState()
+  }
   renderKrakenCharts()
 }
 

@@ -18,7 +18,8 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   const chartEl = document.createElement('chart')
   chartEl.setAttribute('id', name)
   chartEl.setAttribute('class', 'chart')
-  chartEl.style.maxWidth = `${Math.floor(fullWidth)}px`
+  chartEl.style.width = `${Math.floor(fullWidth)}px`
+  chartEl.style.maxWidth = '100%'
   chartEl.style.height = `${fullHeight}px`
   chartEl.style.overflow = 'visible'
 
@@ -97,6 +98,11 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     .accessor(volAccessor)
     .xScale(x)
     .yScale(yVolume)
+    .width(function (scale) {
+      const band = scale.band !== undefined ? Math.max(scale.band(), 1) : 3
+      // Integer width only — Math.round() inflates odd bands; Chromium then antialiases wider.
+      return Math.max(1, Math.floor(band * 0.5))
+    })
 
   let xAxis = d3.axisBottom(x)
 
@@ -388,7 +394,9 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   x.zoomable().clamp(false)
 
   function rightPad () {
-    return Math.max(4, Math.floor(maxVisible * 0.08))
+    const gapPx = 4
+    const band = width / Math.max(1, maxVisible)
+    return band > 0 ? gapPx / band : 0.2
   }
 
   function maxPanEnd (state) {
@@ -482,7 +490,7 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
 
   function applyGlobalView (state) {
     state = state || loadKrakenViewState()
-    const span = state.viewSpan || maxVisible
+    const span = maxVisible
     const margin = savedKrakenRightMargin(state, rightPad())
     const defaultEnd = data.length - 1 + margin
     const panOffset = state.panOffset || 0
@@ -515,7 +523,6 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
     }
 
     saveKrakenViewState({
-      viewSpan: span,
       rightMargin: rightMargin,
       panOffset: panOffset,
       followLive: panOffset < Math.max(2, span * 0.15)
@@ -523,9 +530,8 @@ async function chart (name, symbol, currency, fullWidth, fullHeight) {
   }
 
   function resetToDefaultView () {
-    const state = loadKrakenViewState()
     saveKrakenViewState({
-      rightMargin: savedKrakenRightMargin(state, rightPad()),
+      rightMargin: null,
       panOffset: 0,
       followLive: true
     })

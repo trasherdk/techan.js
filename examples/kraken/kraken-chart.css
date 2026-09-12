@@ -145,12 +145,8 @@ html[data-theme="dark"] {
 	fill: var(--chart-axis);
 }
 
-.chart path {
-	fill: none;
-	stroke-width: 1;
-}
-
 .chart path.ohlc {
+	fill: none;
 	stroke: var(--ohlc-neutral);
 	stroke-width: 1;
 }
@@ -169,6 +165,8 @@ html[data-theme="dark"] {
 
 .chart path.volume {
 	fill: var(--volume-neutral);
+	stroke: none;
+	shape-rendering: crispEdges;
 }
 
 .chart path.volume.up {

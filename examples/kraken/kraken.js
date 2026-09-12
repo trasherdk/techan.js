@@ -645,12 +645,62 @@ function visibleBarCount (plotWidth) {
   return Math.max(40, Math.min(720, Math.floor(plotWidth / 5)))
 }
 
+const KRAKEN_VIEW_VERSION = 4
+
+function krakenViewInterval () {
+  const source = params || kraken.defaults
+  return source.interval
+    ? Number(source.interval)
+    : resolveInterval(source.res, source.agg)
+}
+
+function krakenMainWidth () {
+  const main = document.querySelector('main')
+  if (main && main.clientWidth > 0) {
+    return main.clientWidth
+  }
+  return window.innerWidth
+}
+
+function krakenChartWidth () {
+  const available = krakenMainWidth()
+  const divisor = Math.max(1, Math.floor(available / 500))
+  const dim = dimension()
+  return (available - (dim.margin.left + dim.margin.right)) / divisor
+}
+
 function defaultKrakenViewState () {
   return {
+    version: KRAKEN_VIEW_VERSION,
+    interval: krakenViewInterval(),
     rightMargin: null,
     panOffset: 0,
-    viewSpan: null,
     followLive: true
+  }
+}
+
+function normalizeKrakenViewState (saved) {
+  const defaults = defaultKrakenViewState()
+  saved = saved || {}
+
+  if (saved.version !== KRAKEN_VIEW_VERSION) {
+    return defaults
+  }
+  if (saved.interval !== defaults.interval) {
+    return defaults
+  }
+
+  const state = Object.assign(defaults, saved)
+  delete state.viewSpan
+  return state
+}
+
+function clearKrakenViewState () {
+  kraken.viewState = null
+  try {
+    localStorage.removeItem(kraken.viewStorageKey)
+  } catch (error) {
+    console.log('clearKrakenViewState', error.message)
   }
 }
 
@@ -673,7 +723,7 @@ function loadKrakenViewState () {
   try {
     const raw = localStorage.getItem(kraken.viewStorageKey)
     if (raw) {
-      kraken.viewState = Object.assign(defaultKrakenViewState(), JSON.parse(raw))
+      kraken.viewState = normalizeKrakenViewState(JSON.parse(raw))
       return kraken.viewState
     }
   } catch (error) {
@@ -725,7 +775,11 @@ function notifyKrakenViewPan (domain, sourceId) {
 
 function saveKrakenViewState (next, options) {
   options = options || {}
-  kraken.viewState = Object.assign({}, loadKrakenViewState(), next)
+  kraken.viewState = Object.assign({}, loadKrakenViewState(), next, {
+    version: KRAKEN_VIEW_VERSION,
+    interval: krakenViewInterval()
+  })
+  delete kraken.viewState.viewSpan
   if (options.persist !== false) {
     try {
       localStorage.setItem(kraken.viewStorageKey, JSON.stringify(kraken.viewState))
